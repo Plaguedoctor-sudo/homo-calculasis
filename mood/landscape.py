@@ -16,9 +16,9 @@ class Params:
     t_max: float = 60.0
 
 
-def dU(m: float, c: float, barrier: float) -> float:
+def dU(m: float, c: float, barrier: float, a: float = 1.0, b: float = 1.0) -> float:
     # U(m) = a m^4/4 - b m^2/2 + c m + lam*L*m ; dU/dm:
-    return m**3 - m + c + barrier
+    return a * m**3 - b * m + c + barrier
 
 
 def run_arm(start: float, drive: float, load: Load, p: Params,

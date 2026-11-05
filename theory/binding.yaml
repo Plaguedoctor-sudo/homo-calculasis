@@ -20,3 +20,10 @@ Tier_B:
   synaptic_homeostasis: {module: memory, param: sws_downscale, test: tests/test_sws_density.py}
   dohad: {module: interoception, param: crit_window, test: tests/test_early_care.py}
   neurovisceral: {module: control, param: vagal_tone, test: tests/test_hrv_dnic.py}
+  exposome: {module: environment, param: pm25_inflammatory_drive, test: tests/test_macro_psychosocial_glial.py}
+  lat1_competition: {module: nutrition, param: bbb_trp_uptake_factor, test: tests/test_macro_psychosocial_glial.py}
+  mitochondrial_mal: {module: nutrition, param: atp_flux, test: tests/test_macro_psychosocial_glial.py}
+  psychosocial_ctra: {module: psychosocial, param: ctra_inflammatory_drive, test: tests/test_macro_psychosocial_glial.py}
+  joiner_synergy: {module: psychosocial, param: interpersonal_mood_drift, test: tests/test_macro_psychosocial_glial.py}
+  tripartite_synapse: {module: neuroglia, param: glu_extrasynaptic, test: tests/test_macro_psychosocial_glial.py}
+  hpt_deiodinase: {module: endocrine, param: t3_brain, test: tests/test_macro_psychosocial_glial.py}

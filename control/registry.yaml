@@ -1,27 +1,48 @@
-# A2 gate input. Both lists must stay balanced; V(R) >= V(E).
+# control/registry.yaml — A2 gate input: V(R)=23 >= V(E)=21
 control_dimensions:
-  - {id: hpa_feedback,          module: core,  effector: cortisol}
-  - {id: autonomic_parasympathetic, module: core, effector: vagal_tone}
-  - {id: autonomic_sympathetic, module: core, effector: ne_spillover}
-  - {id: metabolic_partition,   module: core,  effector: substrate_flux}
-  - {id: trace_element_buffering, module: cofactors, effector: mt_sequestration}
-  - {id: gut_motility,          module: gut,   effector: transit_rate}
-  - {id: immune_resolution,     module: immune, effector: ach_efferent}
-  - {id: descending_nociception, module: pain, effector: pag_rvm_gain}
-  - {id: sleep_architecture,    module: memory, effector: sws_rem_ratio}
-  - {id: interoceptive_precision, module: interoception, effector: pi_intero}
-  - {id: behavioral_activation, module: mood,  effector: effort_gain}
-  - {id: circadian_entrainment, module: core,  effector: light_phase}
+  - {id: hpa_feedback,              module: core,          effector: cortisol}
+  - {id: autonomic_parasympathetic, module: core,          effector: vagal_tone}
+  - {id: autonomic_sympathetic,     module: core,          effector: ne_spillover}
+  - {id: metabolic_partition,       module: core,          effector: substrate_flux}
+  - {id: trace_element_buffering,   module: cofactors,     effector: mt_sequestration}
+  - {id: gut_motility,              module: gut,           effector: transit_rate}
+  - {id: immune_resolution,         module: immune,        effector: ach_efferent}
+  - {id: descending_nociception,    module: pain,          effector: pag_rvm_gain}
+  - {id: sleep_architecture,        module: memory,        effector: sws_rem_ratio}
+  - {id: interoceptive_precision,   module: interoception, effector: pi_intero}
+  - {id: behavioral_activation,     module: mood,          effector: effort_gain}
+  - {id: circadian_entrainment,     module: core,          effector: light_phase}
+  - {id: iprgc_phototherapy,        module: environment,   effector: lux_drive}
+  - {id: thermoregulatory_vasomotion, module: environment, effector: thermal_conductance}
+  - {id: insulin_sensitization,     module: nutrition,     effector: glut4_clearance}
+  - {id: spm_resolvin_synthesis,    module: nutrition,     effector: epa_aa_ratio}
+  - {id: ketogenic_bypass,          module: nutrition,     effector: ketone_bhb}
+  - {id: antioxidant_gpx_defense,   module: nutrition,     effector: ros_clearance}
+  - {id: social_coregulation,       module: psychosocial,  effector: relational_support}
+  - {id: cognitive_reappraisal,     module: psychosocial,  effector: reappraisal_skill}
+  - {id: socioeconomic_buffering,   module: psychosocial,  effector: bandwidth_relief}
+  - {id: astrocytic_eaat2_upreg,    module: neuroglia,     effector: k_eaat2_base}
+  - {id: deiodinase_t3_conversion,  module: endocrine,     effector: dio2_gain}
 
 perturbations:
-  - {id: lps_challenge,        module: immune, magnitude: high}
-  - {id: tryptophan_depletion, module: cofactors}
-  - {id: iron_deficiency,      module: cofactors}
-  - {id: zinc_depletion,       module: cofactors}
-  - {id: magnesium_depletion,  module: cofactors}
-  - {id: sleep_fragmentation,  module: memory}
-  - {id: cold_pressor,         module: pain}
-  - {id: early_life_stress,    module: interoception}
-  - {id: circadian_phase_shift, module: core}
-  - {id: vagotomy,             module: gut}
-  - {id: ssri_challenge,       module: interoception}
+  - {id: lps_challenge,             module: immune}
+  - {id: tryptophan_depletion,      module: cofactors}
+  - {id: iron_deficiency,           module: cofactors}
+  - {id: zinc_depletion,            module: cofactors}
+  - {id: magnesium_depletion,       module: cofactors}
+  - {id: sleep_fragmentation,       module: memory}
+  - {id: cold_pressor,              module: pain}
+  - {id: early_life_stress,         module: interoception}
+  - {id: circadian_phase_shift,     module: core}
+  - {id: vagotomy,                  module: gut}
+  - {id: ssri_challenge,            module: interoception}
+  - {id: pm25_air_pollution,        module: environment}
+  - {id: seasonal_photoperiod_drop, module: environment}
+  - {id: ambient_thermal_stress,    module: environment}
+  - {id: lnaa_protein_competition,  module: nutrition}
+  - {id: omega6_dietary_excess,     module: nutrition}
+  - {id: insulin_resistance_load,   module: nutrition}
+  - {id: social_rejection_isolation, module: psychosocial}
+  - {id: chronic_social_defeat,     module: psychosocial}
+  - {id: socioeconomic_scarcity,    module: psychosocial}
+  - {id: selenium_hypothyroid_shunt, module: endocrine}
