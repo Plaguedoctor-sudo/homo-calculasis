@@ -1,0 +1,22 @@
+# Every module must be bound to a theory and a test. Unbound modules cannot merge.
+A1: {module: core, test: tests/test_mass_balance.py, tier: A}
+A2: {module: control, test: tests/test_requisite_variety.py, tier: A}
+A3: {module: load, test: tests/test_load_monotone.py, tier: A}
+A3: {module: load, test: tests/test_load_irreversible.py, tier: A}
+A4: {module: mood, test: tests/test_hysteresis.py, tier: A, gono: true}
+A6: {module: core, test: tests/test_flux_positive.py, tier: A}
+A8: {module: interoception, test: tests/test_blocking_precision.py, tier: A}
+
+Tier_B:
+  interoceptive_inference: {module: interoception, param: Pi_intero, test: tests/test_heartbeat_load.py}
+  constructed_emotion: {module: interoception, param: concept_prior, test: tests/test_vocab_shift.py}
+  immune_brain: {module: immune, param: ido_rate, test: tests/test_qa_ka_shunt.py}
+  cholinergic_antiinflammatory: {module: gut, param: ach_efferent, test: tests/test_vagal_tnf.py}
+  glymphatic: {module: memory, param: k_clear, test: tests/test_sleep_clearance.py}
+  criticality: {module: core, param: branching_ratio, test: tests/test_criticality.py}
+  pain_inference: {module: pain, param: Pi_noci, test: tests/test_expectation_shift.py}
+  placebo: {module: interoception, param: Pi_prior, test: tests/test_open_hidden.py}
+  circadian: {module: core, param: phase, test: tests/test_phase_shift.py}
+  synaptic_homeostasis: {module: memory, param: sws_downscale, test: tests/test_sws_density.py}
+  dohad: {module: interoception, param: crit_window, test: tests/test_early_care.py}
+  neurovisceral: {module: control, param: vagal_tone, test: tests/test_hrv_dnic.py}

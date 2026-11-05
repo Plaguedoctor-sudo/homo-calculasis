@@ -1,0 +1,27 @@
+# A2 gate input. Both lists must stay balanced; V(R) >= V(E).
+control_dimensions:
+  - {id: hpa_feedback,          module: core,  effector: cortisol}
+  - {id: autonomic_parasympathetic, module: core, effector: vagal_tone}
+  - {id: autonomic_sympathetic, module: core, effector: ne_spillover}
+  - {id: metabolic_partition,   module: core,  effector: substrate_flux}
+  - {id: trace_element_buffering, module: cofactors, effector: mt_sequestration}
+  - {id: gut_motility,          module: gut,   effector: transit_rate}
+  - {id: immune_resolution,     module: immune, effector: ach_efferent}
+  - {id: descending_nociception, module: pain, effector: pag_rvm_gain}
+  - {id: sleep_architecture,    module: memory, effector: sws_rem_ratio}
+  - {id: interoceptive_precision, module: interoception, effector: pi_intero}
+  - {id: behavioral_activation, module: mood,  effector: effort_gain}
+  - {id: circadian_entrainment, module: core,  effector: light_phase}
+
+perturbations:
+  - {id: lps_challenge,        module: immune, magnitude: high}
+  - {id: tryptophan_depletion, module: cofactors}
+  - {id: iron_deficiency,      module: cofactors}
+  - {id: zinc_depletion,       module: cofactors}
+  - {id: magnesium_depletion,  module: cofactors}
+  - {id: sleep_fragmentation,  module: memory}
+  - {id: cold_pressor,         module: pain}
+  - {id: early_life_stress,    module: interoception}
+  - {id: circadian_phase_shift, module: core}
+  - {id: vagotomy,             module: gut}
+  - {id: ssri_challenge,       module: interoception}
