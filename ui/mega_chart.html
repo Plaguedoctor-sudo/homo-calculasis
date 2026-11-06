@@ -571,6 +571,7 @@
     <button class="tab-btn" data-tab="rx">📋 Doctor's Consultation &amp; Rx</button>
     <button class="tab-btn" data-tab="clamps">🧪 Dynamic Lab Clamps</button>
     <button class="tab-btn" data-tab="validation">📊 Clinical Trial Validation</button>
+    <button class="tab-btn" data-tab="manual">📖 Clinical User Manual</button>
   </div>
 
   <div class="controls">
@@ -1271,6 +1272,175 @@
       </div>
     </div>
   </div>
+
+  <!-- TAB 6: Clinical User Manual -->
+  <div class="view-panel" id="view-manual" style="padding:24px 32px; overflow-y:auto; flex-direction:column; gap:20px; max-width:1150px; margin:0 auto; width:100%;">
+    <div class="card" style="background:#161b22; border:1px solid #30363d; padding:24px; border-radius:10px;">
+      <div style="border-bottom:2px solid #58a6ff; padding-bottom:12px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <h2 style="font-size:1.45rem; font-weight:800; color:#58a6ff; display:flex; align-items:center; gap:8px;">
+            <span>📖</span> Whole-Body Clinical Workstation: Comprehensive User Manual
+          </h2>
+          <p style="font-size:0.82rem; color:var(--text-secondary); margin-top:4px;">
+            A Doctor-Centric Guide to Whole-Body Computational Psychiatry, NABL Diagnostic Interpretation, and Multi-Scale Interventions
+          </p>
+        </div>
+        <span style="font-size:0.75rem; background:rgba(88,166,255,0.15); color:#58a6ff; padding:4px 10px; border-radius:6px; font-weight:700; border:1px solid rgba(88,166,255,0.3);">
+          v1.0 Clinical Edition
+        </span>
+      </div>
+
+      <!-- Quick Navigation Chips -->
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px;">
+        <a href="#m-sec-rationale" style="background:var(--bg-card); color:var(--text-primary); text-decoration:none; padding:5px 12px; border-radius:20px; font-size:0.75rem; border:1px solid var(--border);">1. Clinical Rationale</a>
+        <a href="#m-sec-architecture" style="background:var(--bg-card); color:var(--text-primary); text-decoration:none; padding:5px 12px; border-radius:20px; font-size:0.75rem; border:1px solid var(--border);">2. Physiological Architecture</a>
+        <a href="#m-sec-nabl" style="background:var(--bg-card); color:var(--text-primary); text-decoration:none; padding:5px 12px; border-radius:20px; font-size:0.75rem; border:1px solid var(--border);">3. NABL Lab Standards</a>
+        <a href="#m-sec-usage" style="background:var(--bg-card); color:var(--text-primary); text-decoration:none; padding:5px 12px; border-radius:20px; font-size:0.75rem; border:1px solid var(--border);">4. Workstation Operation</a>
+        <a href="#m-sec-custom" style="background:var(--bg-card); color:var(--text-primary); text-decoration:none; padding:5px 12px; border-radius:20px; font-size:0.75rem; border:1px solid var(--border);">5. Custom Parameters</a>
+        <a href="#m-sec-rx" style="background:var(--bg-card); color:var(--text-primary); text-decoration:none; padding:5px 12px; border-radius:20px; font-size:0.75rem; border:1px solid var(--border);">6. Rx Requisition &amp; Directives</a>
+        <a href="#m-sec-cases" style="background:var(--bg-card); color:var(--text-primary); text-decoration:none; padding:5px 12px; border-radius:20px; font-size:0.75rem; border:1px solid var(--border);">7. Case Vignettes</a>
+      </div>
+
+      <!-- Section 1: Rationale -->
+      <div id="m-sec-rationale" style="margin-bottom:28px;">
+        <h3 style="font-size:1.1rem; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:6px; margin-bottom:10px;">
+          1. Clinical Rationale &amp; Paradigm Shift
+        </h3>
+        <p style="font-size:0.84rem; line-height:1.6; color:#c9d1d9; margin-bottom:10px;">
+          Traditional psychiatric diagnostics rely primarily on subjective symptom questionnaires (e.g. DSM-5 / HAM-D), grouping heterogeneous pathophysiological processes into a single diagnostic umbrella. In clinical practice—particularly across South Asian and Indian patient populations—<strong>antidepressant non-response exceeds 50%</strong>. This failure is frequently driven by overlooked peripheral biological bottlenecks:
+        </p>
+        <ul style="font-size:0.82rem; line-height:1.6; color:#8b949e; padding-left:20px; margin-bottom:12px;">
+          <li><strong style="color:#f0883e;">Nutritional Monoamine Starvation:</strong> Serum Ferritin &lt; 30 ng/mL and Vitamin B12 &lt; 211 pg/mL directly starve Tryptophan Hydroxylase-2 (TPH2) and Tyrosine Hydroxylase (TH), making SSRIs chemically ineffective.</li>
+          <li><strong style="color:#d29922;">South Asian Insulin Resistance:</strong> Fasting hyperinsulinemia (HOMA-IR &gt; 2.5) deprives astrocytes of glucose/ketones, leading to EAAT2 transporter failure and extracellular glutamate accumulation.</li>
+          <li><strong style="color:#f85149;">Gut-Immune-Kynurenine Axis:</strong> Leaky gut endotoxemia (LPS &gt; 0.2 EU/mL) and hs-CRP &gt; 3.0 mg/L activate IDO1, shunting tryptophan toward neurotoxic Quinolinic Acid (QA) causing NMDA excitotoxicity.</li>
+          <li><strong style="color:#bc8cff;">Melancholic HPA Glucocorticoid Resistance:</strong> Overnight 1mg Dexamethasone non-suppression (post-DEX cortisol &ge; 1.8 µg/dL) signals severe central receptor downregulation.</li>
+        </ul>
+      </div>
+
+      <!-- Section 2: Architecture -->
+      <div id="m-sec-architecture" style="margin-bottom:28px;">
+        <h3 style="font-size:1.1rem; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:6px; margin-bottom:10px;">
+          2. Physiological Architecture &amp; Attractor Mechanics
+        </h3>
+        <p style="font-size:0.84rem; line-height:1.6; color:#c9d1d9; margin-bottom:10px;">
+          The engine models whole-body homeostasis via coupled non-linear differential equations encompassing 8 biological tiers:
+        </p>
+        <div style="background:#0d1117; padding:14px; border-radius:8px; border:1px solid #30363d; font-size:0.8rem; line-height:1.5; color:#58a6ff; font-family:monospace; margin-bottom:12px;">
+          dm/dt = -(m³ - m - NetDrive)<br>
+          NetDrive = AllostaticStress - TrophicSupport + 0.20<br>
+          TrophicSupport = 0.35·[5-HT] + 0.35·[DA] + 0.25·[ATP] + 0.15·[T3_brain]<br>
+          AllostaticStress = 0.30·L + 0.25·[IL-6] + 0.15·(QA/KA) + 0.20·Tax_psy
+        </div>
+        <p style="font-size:0.82rem; line-height:1.6; color:#8b949e;">
+          When <span style="color:#f85149; font-weight:bold;">NetDrive &gt; 0</span>, the euthymic potential well (+1.0) annihilates through a saddle-node bifurcation, causing the patient to sink irreversibly into the depressive attractor basin (-1.0). Recovery requires multi-target intervention to reverse net allostatic drive.
+        </p>
+      </div>
+
+      <!-- Section 3: NABL Reference Standards -->
+      <div id="m-sec-nabl" style="margin-bottom:28px;">
+        <h3 style="font-size:1.1rem; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:6px; margin-bottom:10px;">
+          3. Indian NABL Diagnostic Standards &amp; Reference Thresholds
+        </h3>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.8rem; margin-top:8px;">
+            <thead>
+              <tr style="background:#21262d; color:#f0f6fc; text-align:left;">
+                <th style="padding:8px 10px; border:1px solid #30363d;">Biomarker</th>
+                <th style="padding:8px 10px; border:1px solid #30363d;">Indian Unit</th>
+                <th style="padding:8px 10px; border:1px solid #30363d;">Target Reference</th>
+                <th style="padding:8px 10px; border:1px solid #30363d;">High-Risk Cutoff</th>
+                <th style="padding:8px 10px; border:1px solid #30363d;">Pathophysiological Consequence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:7px 10px; border:1px solid #30363d;"><strong>Serum Ferritin</strong></td><td style="padding:7px 10px; border:1px solid #30363d;">ng/mL</td><td style="padding:7px 10px; border:1px solid #30363d;">30 – 300</td><td style="padding:7px 10px; border:1px solid #30363d; color:#f85149;">&lt; 30 (Critical &lt; 15)</td><td style="padding:7px 10px; border:1px solid #30363d; color:#8b949e;">Stalls TPH2 and TH monoamine synthesis. Causes severe SSRI non-response.</td></tr>
+              <tr><td style="padding:7px 10px; border:1px solid #30363d;"><strong>Vitamin B12</strong></td><td style="padding:7px 10px; border:1px solid #30363d;">pg/mL</td><td style="padding:7px 10px; border:1px solid #30363d;">211 – 911</td><td style="padding:7px 10px; border:1px solid #30363d; color:#f85149;">&lt; 211 (Severe &lt; 150)</td><td style="padding:7px 10px; border:1px solid #30363d; color:#8b949e;">Impaired 1-carbon SAMe cycle, BH4 depletion, microvascular neuropathy.</td></tr>
+              <tr><td style="padding:7px 10px; border:1px solid #30363d;"><strong>25-OH Vitamin D3</strong></td><td style="padding:7px 10px; border:1px solid #30363d;">ng/mL</td><td style="padding:7px 10px; border:1px solid #30363d;">30 – 100</td><td style="padding:7px 10px; border:1px solid #30363d; color:#d29922;">&lt; 20 (Deficient)</td><td style="padding:7px 10px; border:1px solid #30363d; color:#8b949e;">Suppresses BDNF neuroplasticity; worsens microglial activation.</td></tr>
+              <tr><td style="padding:7px 10px; border:1px solid #30363d;"><strong>Serum Zinc</strong></td><td style="padding:7px 10px; border:1px solid #30363d;">µg/dL</td><td style="padding:7px 10px; border:1px solid #30363d;">70 – 120</td><td style="padding:7px 10px; border:1px solid #30363d; color:#d29922;">&lt; 70</td><td style="padding:7px 10px; border:1px solid #30363d; color:#8b949e;">KAT enzyme cofactor; deficiency diverts kynurenines into Quinolinic Acid.</td></tr>
+              <tr><td style="padding:7px 10px; border:1px solid #30363d;"><strong>Calculated HOMA-IR</strong></td><td style="padding:7px 10px; border:1px solid #30363d;">Ratio</td><td style="padding:7px 10px; border:1px solid #30363d;">&lt; 1.50</td><td style="padding:7px 10px; border:1px solid #30363d; color:#f85149;">&gt; 2.50 (Resistant)</td><td style="padding:7px 10px; border:1px solid #30363d; color:#8b949e;">(FBS × Insulin)/405. Astrocytic bioenergetic failure; EAAT2 collapse.</td></tr>
+              <tr><td style="padding:7px 10px; border:1px solid #30363d;"><strong>hs-CRP</strong></td><td style="padding:7px 10px; border:1px solid #30363d;">mg/L</td><td style="padding:7px 10px; border:1px solid #30363d;">&lt; 1.0</td><td style="padding:7px 10px; border:1px solid #30363d; color:#f85149;">&gt; 3.0</td><td style="padding:7px 10px; border:1px solid #30363d; color:#8b949e;">Systemic inflammation activating endothelial IDO1; shunts tryptophan to QA.</td></tr>
+              <tr><td style="padding:7px 10px; border:1px solid #30363d;"><strong>Post-1mg DEX Cortisol</strong></td><td style="padding:7px 10px; border:1px solid #30363d;">µg/dL</td><td style="padding:7px 10px; border:1px solid #30363d;">&lt; 1.8</td><td style="padding:7px 10px; border:1px solid #30363d; color:#f85149;">&ge; 1.8 (Non-suppressed)</td><td style="padding:7px 10px; border:1px solid #30363d; color:#8b949e;">Melancholic HPA glucocorticoid receptor failure; elevated suicide and relapse risk.</td></tr>
+              <tr><td style="padding:7px 10px; border:1px solid #30363d;"><strong>HRV RMSSD</strong></td><td style="padding:7px 10px; border:1px solid #30363d;">ms</td><td style="padding:7px 10px; border:1px solid #30363d;">35 – 70</td><td style="padding:7px 10px; border:1px solid #30363d; color:#d29922;">&lt; 35</td><td style="padding:7px 10px; border:1px solid #30363d; color:#8b949e;">Loss of cardiovagal parasympathetic tone; opens descending pain gate (DNIC).</td></tr>
+              <tr><td style="padding:7px 10px; border:1px solid #30363d;"><strong>Endotoxin (LPS)</strong></td><td style="padding:7px 10px; border:1px solid #30363d;">EU/mL</td><td style="padding:7px 10px; border:1px solid #30363d;">&lt; 0.20</td><td style="padding:7px 10px; border:1px solid #30363d; color:#f85149;">&ge; 0.20</td><td style="padding:7px 10px; border:1px solid #30363d; color:#8b949e;">Intestinal barrier breakdown; provokes systemic macrophage TLR4 activation.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 4: Workstation Operation -->
+      <div id="m-sec-usage" style="margin-bottom:28px;">
+        <h3 style="font-size:1.1rem; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:6px; margin-bottom:10px;">
+          4. Operating the Clinical Workstation
+        </h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div style="background:#21262d; padding:14px; border-radius:8px; border:1px solid #30363d;">
+            <h4 style="font-size:0.9rem; color:#3fb950; margin-bottom:6px;">Step 1: Patient Profile &amp; Sliders</h4>
+            <p style="font-size:0.78rem; line-height:1.5; color:#c9d1d9;">
+              Choose a clinical phenotype from the <strong>Profile dropdown</strong> or enter individual NABL lab values using the sliders. Each slider update triggers sub-second recalculation across all 8 biological tiers.
+            </p>
+          </div>
+          <div style="background:#21262d; padding:14px; border-radius:8px; border:1px solid #30363d;">
+            <h4 style="font-size:0.9rem; color:#58a6ff; margin-bottom:6px;">Step 2: Monitor 12-Cascade Grid</h4>
+            <p style="font-size:0.78rem; line-height:1.5; color:#c9d1d9;">
+              Watch the <strong>Live Physiological Cascade</strong> grid update in real time: Serotonin flux, Dopaminergic tone, ATP bioenergetics, QA/KA ratio, Allostatic load, and EAAT2 clearance.
+            </p>
+          </div>
+          <div style="background:#21262d; padding:14px; border-radius:8px; border:1px solid #30363d;">
+            <h4 style="font-size:0.9rem; color:#f0883e; margin-bottom:6px;">Step 3: Review Symptom &amp; Drug Predictions</h4>
+            <p style="font-size:0.78rem; line-height:1.5; color:#c9d1d9;">
+              Inspect the 0–10 symptom triage radar (Anhedonia, Fatigue, Brain Fog, Somatic Pain, Sleep Disruption) and treatment response forecasts for SSRIs, rTMS, Ketamine, and Micronutrient repletion.
+            </p>
+          </div>
+          <div style="background:#21262d; padding:14px; border-radius:8px; border:1px solid #30363d;">
+            <h4 style="font-size:0.9rem; color:#bc8cff; margin-bottom:6px;">Step 4: Generate Rx Consultation Slip</h4>
+            <p style="font-size:0.78rem; line-height:1.5; color:#c9d1d9;">
+              Switch to Tab 3 to review the evidence-based prescription slip, NABL diagnostic orders checklist, and interventional directives. Click <strong>Print Consultation Slip</strong> or copy directly into EHR.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Custom Parameters -->
+      <div id="m-sec-custom" style="margin-bottom:28px;">
+        <h3 style="font-size:1.1rem; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:6px; margin-bottom:10px;">
+          5. Creating &amp; Adding Custom Parameters
+        </h3>
+        <p style="font-size:0.84rem; line-height:1.6; color:#c9d1d9; margin-bottom:12px;">
+          The workstation allows clinicians and clinical researchers to define custom biomarkers, drug dosages, or experimental clamps:
+        </p>
+        <ol style="font-size:0.82rem; line-height:1.6; color:#8b949e; padding-left:20px; margin-bottom:14px;">
+          <li>In the left column, locate the green dashed card labeled <strong>⭐ Custom Parameters &amp; Clinical Clamps</strong>.</li>
+          <li>Click <strong style="color:#3fb950;">+ Add Parameter</strong> to expand the creator form.</li>
+          <li>Select a 1-click clinical preset (e.g. <em>Serum Folate</em>, <em>TNF-Alpha</em>, <em>Zonulin</em>, <em>Exercise Volume</em>, <em>Metformin</em>, <em>Esketamine</em>) or enter custom parameters.</li>
+          <li>Set parameter ranges, units, and designate which physiological axis it modulates.</li>
+          <li>Click <strong>Save &amp; Couple to Simulation</strong>. The new parameter immediately receives a live slider and couples dynamically to all downstream simulation readouts.</li>
+        </ol>
+      </div>
+
+      <!-- Section 6: Clinical Vignettes -->
+      <div id="m-sec-cases" style="margin-bottom:20px;">
+        <h3 style="font-size:1.1rem; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:6px; margin-bottom:10px;">
+          6. High-Yield Clinical Case Vignettes
+        </h3>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="background:#0d1117; padding:12px 16px; border-radius:6px; border-left:3px solid #f0883e;">
+            <strong style="color:#f0883e; font-size:0.85rem;">Case A: The "Refractory" Vegetarian Patient with Low Ferritin &amp; B12</strong>
+            <p style="font-size:0.78rem; color:#8b949e; margin-top:4px;">
+              A 34-year-old vegetarian software engineer presents with severe anhedonia, fatigue, and non-response to Escitalopram 20mg. Workstation labs reveal Ferritin 14 ng/mL and B12 140 pg/mL. The model demonstrates that TPH2 is stalled; SSRI monotherapy response is only 6.0%. <strong>Protocol:</strong> Initiate Ferrous Ascorbate 100mg elemental Fe OD + Methylcobalamin 1500 mcg OD. Serotonin synthesis restores within 3 weeks.
+            </p>
+          </div>
+          <div style="background:#0d1117; padding:12px 16px; border-radius:6px; border-left:3px solid #d29922;">
+            <strong style="color:#d29922; font-size:0.85rem;">Case B: South Asian Metabolic Glial Failure (HOMA-IR 4.93)</strong>
+            <p style="font-size:0.78rem; color:#8b949e; margin-top:4px;">
+              A 48-year-old executive presents with brain fog, somatic pain, and cognitive fatigue. Labs show FBS 108 mg/dL, Fasting Insulin 18.5 µIU/mL, HOMA-IR 4.93, and DEX 3.2 µg/dL. Astrocytic EAAT2 transporters are starved of bioenergetic support, causing glutamate excitotoxicity. <strong>Protocol:</strong> Low-glycemic dietary modification, Metformin 500mg BD, and Left DLPFC 10Hz rTMS to directly upregulate EAAT2 expression.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <script>
