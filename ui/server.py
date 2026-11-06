@@ -320,6 +320,46 @@ class ClinicalServerHandler(BaseHTTPRequestHandler):
             if dex_post >= 1.8:
                 patient.load.L += 0.25 * (dex_post - 1.8)
 
+            # 7. Apply User-Created / Custom Parameters
+            custom_params = payload.get("custom_parameters", [])
+            for cp in custom_params:
+                try:
+                    c_val = float(cp.get("value", 1.0))
+                    c_base = float(cp.get("baseline", c_val))
+                    c_min = float(cp.get("min", 0.0))
+                    c_max = float(cp.get("max", 10.0))
+                    c_target = cp.get("target_axis", "il6_inflammation")
+                    c_dir = cp.get("direction", "positive")
+                    span = max(0.001, c_max - c_min)
+                    norm_delta = (c_val - c_base) / span
+                    mult_factor = max(0.05, 1.0 + (norm_delta if c_dir == "positive" else -norm_delta))
+
+                    if c_target == "il6_inflammation":
+                        patient.axis.cyto.il6 = max(0.05, patient.axis.cyto.il6 * mult_factor)
+                    elif c_target == "serotonin_monoamine":
+                        patient.axis.trp.serotonin = max(0.05, patient.axis.trp.serotonin * mult_factor)
+                    elif c_target == "dopamine_synthesis":
+                        patient.axis.cof.fe.intake = max(0.05, patient.axis.cof.fe.intake * mult_factor)
+                    elif c_target == "eaat2_clearance":
+                        patient.glia.k_eaat2_base = max(0.1, patient.glia.k_eaat2_base * mult_factor)
+                    elif c_target == "mito_atp":
+                        eff = norm_delta if c_dir == "positive" else -norm_delta
+                        patient.macro.ketone_bhb = max(0.0, patient.macro.ketone_bhb + eff * 2.5)
+                    elif c_target == "allostatic_load":
+                        eff = norm_delta if c_dir == "positive" else -norm_delta
+                        patient.load.L = max(0.0, patient.load.L + eff * 0.8)
+                    elif c_target == "vagal_tone":
+                        patient.axis.vagal.efferent = max(0.05, patient.axis.vagal.efferent * mult_factor)
+                    elif c_target == "gut_barrier":
+                        patient.axis.barrier.lps_lumen = max(0.05, patient.axis.barrier.lps_lumen * mult_factor)
+                    elif c_target == "mood_m":
+                        eff = norm_delta if c_dir == "positive" else -norm_delta
+                        patient.m = max(-1.2, min(1.2, patient.m + eff * 0.6))
+                    elif c_target == "thyroid_t3":
+                        patient.hpt.t3_brain = max(0.05, patient.hpt.t3_brain * mult_factor)
+                except Exception:
+                    continue
+
             intervention = payload.get("intervention", "none")
             if intervention == "repletion":
                 patient.axis.cof.fe.intake = max(patient.axis.cof.fe.intake, 2.0)
@@ -450,11 +490,27 @@ class ClinicalServerHandler(BaseHTTPRequestHandler):
                 "prescriptions": prescriptions
             }
 
+            downstream_cascade = {
+                "dopamine_synthesis": round(final_da, 3),
+                "serotonin_flux": round(final_5ht, 3),
+                "atp_bioenergetics": round(final_atp, 3),
+                "qa_ka_ratio": round(final_qa_ka, 3),
+                "allostatic_load_L": round(final_L, 3),
+                "mood_basin_m": round(final_m, 3),
+                "homa_ir": round(homa_ir_val, 2),
+                "vagal_efferent": round(float(patient.axis.vagal.efferent), 3),
+                "cytokine_il6": round(final_il6, 3),
+                "dnic_pain_gate": round(float(dnic_gate), 3),
+                "sleep_sws_density": round(float(patient.sleep.sws_density), 3),
+                "eaat2_clearance": round(float(patient.glia.k_eaat2_base), 3),
+            }
+
             self.send_json_response({
                 "final_m": float(patient.m),
                 "final_L": float(patient.load.L),
                 "final_qa_ka": float(patient.axis.trp.qa_ka),
                 "basin_status": basin,
+                "downstream_cascade": downstream_cascade,
                 "symptoms": {
                     "anhedonia": anhedonia,
                     "fatigue": fatigue,
@@ -509,6 +565,7 @@ class ClinicalServerHandler(BaseHTTPRequestHandler):
 
 
 def run_server(host: str = "0.0.0.0", port: int = 8050):
+    ThreadingHTTPServer.allow_reuse_address = True
     server_address = (host, port)
     httpd = ThreadingHTTPServer(server_address, ClinicalServerHandler)
     print(f"\n=======================================================")

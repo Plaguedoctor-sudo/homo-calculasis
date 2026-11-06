@@ -380,6 +380,41 @@
   .badge-norm { background: rgba(63, 185, 80, 0.2); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.4); }
   .badge-high { background: rgba(248, 81, 73, 0.2); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.4); }
 
+  /* Live Downstream Cascade Cards */
+  .cascade-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: all 0.15s ease;
+  }
+  .cascade-item:hover {
+    border-color: var(--accent-blue);
+    background: #1c2128;
+    transform: translateY(-1px);
+  }
+  .casc-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .casc-val {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #58a6ff;
+  }
+  .casc-sub {
+    font-size: 0.62rem;
+    color: #8b949e;
+  }
+
   /* Tab 5 / Rx View: Doctor's Clinical Requisition & Consultation Slip */
   #view-rx {
     padding: 20px;
@@ -792,6 +827,100 @@
           </div>
         </div>
 
+        <!-- Custom & Created Parameters Card -->
+        <div class="card" id="custom-params-card" style="border: 1px dashed #3fb950;">
+          <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>⭐ Custom Parameters &amp; Clinical Clamps</span>
+            <button class="btn btn-sm btn-accent" id="btn-toggle-add-param" style="background:#238636; border-color:#2ea043; font-weight:700;">+ Add Parameter</button>
+          </div>
+          
+          <!-- Creator Form (Collapsible) -->
+          <div id="add-param-form" style="display:none; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:12px; margin-top:8px;">
+            <div style="font-size:0.75rem; font-weight:700; color:#3fb950; margin-bottom:8px;">🧪 Create New Physiological Parameter / Challenge</div>
+            
+            <div style="margin-bottom:8px;">
+              <label style="font-size:0.7rem; color:var(--text-secondary);">Select Clinical Template (Optional):</label>
+              <select id="new-param-preset" style="width:100%; background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:5px 8px; border-radius:4px; font-size:0.75rem; margin-top:2px;">
+                <option value="">-- Choose Template or Enter Custom Details --</option>
+                <option value="folate">🧪 Serum Folate (Ref 4.0–20.0 ng/mL) ➔ Serotonin / Methylation (+)</option>
+                <option value="tnfa">🛡️ TNF-Alpha (Ref &lt;2.5 pg/mL) ➔ Systemic Inflammatory Drive (+)</option>
+                <option value="zonulin">🦠 Serum Zonulin (Ref &lt;38 ng/mL) ➔ Gut Barrier Leak (+)</option>
+                <option value="car">⚡ Cortisol CAR (Ref 0.4–1.0) ➔ Allostatic Load L (+)</option>
+                <option value="exercise">🏃 Exercise Volume (Ref 3–15 MET-hrs/d) ➔ Mitochondrial ATP (+)</option>
+                <option value="metformin">💊 Metformin Dose (0–2000 mg/d) ➔ Astrocytic EAAT2 (+)</option>
+                <option value="esketamine">💉 Esketamine Infusion (0–84 mg) ➔ NMDA Block / Mood Well (+)</option>
+              </select>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+              <div>
+                <label style="font-size:0.7rem; color:var(--text-secondary);">Parameter Name:</label>
+                <input type="text" id="new-param-name" placeholder="e.g. Serum Folate" style="width:100%; background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:5px 8px; border-radius:4px; font-size:0.75rem;">
+              </div>
+              <div>
+                <label style="font-size:0.7rem; color:var(--text-secondary);">Unit:</label>
+                <input type="text" id="new-param-unit" placeholder="e.g. ng/mL" style="width:100%; background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:5px 8px; border-radius:4px; font-size:0.75rem;">
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:8px;">
+              <div>
+                <label style="font-size:0.68rem; color:var(--text-secondary);">Min:</label>
+                <input type="number" id="new-param-min" value="0" style="width:100%; background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:4px 6px; border-radius:4px; font-size:0.75rem;">
+              </div>
+              <div>
+                <label style="font-size:0.68rem; color:var(--text-secondary);">Max:</label>
+                <input type="number" id="new-param-max" value="100" style="width:100%; background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:4px 6px; border-radius:4px; font-size:0.75rem;">
+              </div>
+              <div>
+                <label style="font-size:0.68rem; color:var(--text-secondary);">Step:</label>
+                <input type="number" id="new-param-step" value="1" style="width:100%; background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:4px 6px; border-radius:4px; font-size:0.75rem;">
+              </div>
+              <div>
+                <label style="font-size:0.68rem; color:var(--text-secondary);">Initial:</label>
+                <input type="number" id="new-param-val" value="15" style="width:100%; background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:4px 6px; border-radius:4px; font-size:0.75rem;">
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:8px; margin-bottom:10px;">
+              <div>
+                <label style="font-size:0.7rem; color:var(--text-secondary);">Target Physiological Axis:</label>
+                <select id="new-param-target" style="width:100%; background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:5px 6px; border-radius:4px; font-size:0.72rem;">
+                  <option value="serotonin_monoamine">Monoamine Serotonin Synthesis (TPH2 / 5-HT)</option>
+                  <option value="il6_inflammation">Inflammatory Cytokine Drive (IL-6 / TNF-α)</option>
+                  <option value="dopamine_synthesis">Dopaminergic Tone &amp; Synthesis Rate</option>
+                  <option value="eaat2_clearance">Astrocytic EAAT2 Glutamate Clearance</option>
+                  <option value="mito_atp">Mitochondrial Bioenergetics &amp; ATP Flux</option>
+                  <option value="allostatic_load">Allostatic Stress Load L</option>
+                  <option value="vagal_tone">Vagal Efferent / Parasympathetic Tone</option>
+                  <option value="gut_barrier">Gut Barrier Permeability &amp; LPS Leak</option>
+                  <option value="mood_m">Direct Mood Attractor Potential (m)</option>
+                  <option value="thyroid_t3">Thyroid Brain T3 Delivery</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:0.7rem; color:var(--text-secondary);">Coupling Direction:</label>
+                <select id="new-param-dir" style="width:100%; background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:5px 6px; border-radius:4px; font-size:0.72rem;">
+                  <option value="positive">Direct (+) Stimulate</option>
+                  <option value="negative">Inverse (-) Inhibit</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+              <button class="btn btn-sm" id="btn-cancel-add-param" style="padding:4px 10px;">Cancel</button>
+              <button class="btn btn-sm btn-accent" id="btn-save-add-param" style="background:#238636; border-color:#2ea043; padding:4px 14px; font-weight:bold;">Save &amp; Couple to Simulation</button>
+            </div>
+          </div>
+
+          <!-- Injected Custom Sliders List -->
+          <div id="custom-params-list" style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+            <div id="custom-params-empty" style="font-size:0.72rem; color:var(--text-secondary); text-align:center; padding:10px; background:rgba(255,255,255,0.02); border-radius:6px;">
+              No custom parameters added yet. Click <strong>+ Add Parameter</strong> to create custom lab biomarkers, drug clamps, or clinical challenges.
+            </div>
+          </div>
+        </div>
+
         <!-- Latent Inversion Card -->
         <div class="card">
           <div class="card-title">
@@ -815,6 +944,76 @@
           </div>
           <div id="clinical-alerts-list">
             <div class="alert-box">Analyzing biomarker profile...</div>
+          </div>
+        </div>
+
+        <!-- Live Interconnected Simulational Parameters (Dynamic Cascade) -->
+        <div class="card" id="cascade-card">
+          <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span>⚡ Live Interconnected Physiological Cascade</span>
+            <span style="font-size:0.7rem; color:var(--accent-blue); font-weight:600;">Real-Time Mechanistic Coupling</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px;" id="cascade-grid">
+            <div class="cascade-item" id="casc-5ht">
+              <span class="casc-label">🧬 Serotonin (5-HT)</span>
+              <span class="casc-val" id="casc-val-5ht">--</span>
+              <span class="casc-sub" id="casc-sub-5ht">Synthesis flux</span>
+            </div>
+            <div class="cascade-item" id="casc-da">
+              <span class="casc-label">🎯 Dopamine Tone</span>
+              <span class="casc-val" id="casc-val-da">--</span>
+              <span class="casc-sub" id="casc-sub-da">Reward drive</span>
+            </div>
+            <div class="cascade-item" id="casc-atp">
+              <span class="casc-label">⚡ ATP Bioenergetics</span>
+              <span class="casc-val" id="casc-val-atp">--</span>
+              <span class="casc-sub" id="casc-sub-atp">Mitochondria</span>
+            </div>
+            <div class="cascade-item" id="casc-qaka">
+              <span class="casc-label">☣️ QA/KA Ratio</span>
+              <span class="casc-val" id="casc-val-qaka">--</span>
+              <span class="casc-sub" id="casc-sub-qaka">Excitotoxicity</span>
+            </div>
+            <div class="cascade-item" id="casc-load">
+              <span class="casc-label">📉 Allostatic Load L</span>
+              <span class="casc-val" id="casc-val-load">--</span>
+              <span class="casc-sub" id="casc-sub-load">Stress wear</span>
+            </div>
+            <div class="cascade-item" id="casc-mood">
+              <span class="casc-label">🧭 Mood Well m</span>
+              <span class="casc-val" id="casc-val-mood">--</span>
+              <span class="casc-sub" id="casc-sub-mood">Basin attractor</span>
+            </div>
+            <div class="cascade-item" id="casc-homa">
+              <span class="casc-label">🩸 HOMA-IR</span>
+              <span class="casc-val" id="casc-val-homa">--</span>
+              <span class="casc-sub" id="casc-sub-homa">Insulin resistance</span>
+            </div>
+            <div class="cascade-item" id="casc-vagal">
+              <span class="casc-label">🫀 Vagal Efferent</span>
+              <span class="casc-val" id="casc-val-vagal">--</span>
+              <span class="casc-sub" id="casc-sub-vagal">Autonomic tone</span>
+            </div>
+            <div class="cascade-item" id="casc-il6">
+              <span class="casc-label">🛡️ Cytokine Drive</span>
+              <span class="casc-val" id="casc-val-il6">--</span>
+              <span class="casc-sub" id="casc-sub-il6">IL-6 inflammatory</span>
+            </div>
+            <div class="cascade-item" id="casc-dnic">
+              <span class="casc-label">⚡ DNIC Pain Gate</span>
+              <span class="casc-val" id="casc-val-dnic">--</span>
+              <span class="casc-sub" id="casc-sub-dnic">Descending filter</span>
+            </div>
+            <div class="cascade-item" id="casc-eaat2">
+              <span class="casc-label">🧠 Astrocytic EAAT2</span>
+              <span class="casc-val" id="casc-val-eaat2">--</span>
+              <span class="casc-sub" id="casc-sub-eaat2">Glutamate clear</span>
+            </div>
+            <div class="cascade-item" id="casc-sleep">
+              <span class="casc-label">🌙 Glymphatic SWS</span>
+              <span class="casc-val" id="casc-val-sleep">--</span>
+              <span class="casc-sub" id="casc-sub-sleep">Slow-wave drain</span>
+            </div>
           </div>
         </div>
 
@@ -1830,7 +2029,7 @@ function updateSliderDisplays() {
 let patientSimDebounce = null;
 function schedulePatientSim() {
   clearTimeout(patientSimDebounce);
-  patientSimDebounce = setTimeout(runPatientSim, 200);
+  patientSimDebounce = setTimeout(runPatientSim, 60);
 }
 
 sliderDefs.forEach(def => {
@@ -1842,6 +2041,116 @@ sliderDefs.forEach(def => {
     });
   }
 });
+
+// Custom Parameters Management
+let customParameters = [];
+
+const customPresets = {
+  folate: { name: "Serum Folate", unit: "ng/mL", min: 1.0, max: 25.0, step: 0.5, val: 14.0, target: "serotonin_monoamine", dir: "positive" },
+  tnfa: { name: "TNF-Alpha", unit: "pg/mL", min: 0.5, max: 25.0, step: 0.5, val: 6.5, target: "il6_inflammation", dir: "positive" },
+  zonulin: { name: "Serum Zonulin", unit: "ng/mL", min: 5.0, max: 95.0, step: 1.0, val: 55.0, target: "gut_barrier", dir: "positive" },
+  car: { name: "Cortisol CAR", unit: "ratio", min: 0.2, max: 3.0, step: 0.05, val: 1.6, target: "allostatic_load", dir: "positive" },
+  exercise: { name: "Physical Exercise", unit: "MET-h/d", min: 0.0, max: 25.0, step: 1.0, val: 8.0, target: "mito_atp", dir: "positive" },
+  metformin: { name: "Metformin Therapy", unit: "mg/d", min: 0.0, max: 2000.0, step: 250.0, val: 1000.0, target: "eaat2_clearance", dir: "positive" },
+  esketamine: { name: "Esketamine Provocation", unit: "mg", min: 0.0, max: 84.0, step: 14.0, val: 56.0, target: "mood_m", dir: "positive" }
+};
+
+document.getElementById("btn-toggle-add-param")?.addEventListener("click", () => {
+  const form = document.getElementById("add-param-form");
+  if (!form) return;
+  form.style.display = form.style.display === "none" ? "block" : "none";
+});
+
+document.getElementById("btn-cancel-add-param")?.addEventListener("click", () => {
+  const form = document.getElementById("add-param-form");
+  if (form) form.style.display = "none";
+});
+
+document.getElementById("new-param-preset")?.addEventListener("change", (e) => {
+  const p = customPresets[e.target.value];
+  if (!p) return;
+  document.getElementById("new-param-name").value = p.name;
+  document.getElementById("new-param-unit").value = p.unit;
+  document.getElementById("new-param-min").value = p.min;
+  document.getElementById("new-param-max").value = p.max;
+  document.getElementById("new-param-step").value = p.step;
+  document.getElementById("new-param-val").value = p.val;
+  document.getElementById("new-param-target").value = p.target;
+  document.getElementById("new-param-dir").value = p.dir;
+});
+
+document.getElementById("btn-save-add-param")?.addEventListener("click", () => {
+  const name = document.getElementById("new-param-name")?.value.trim() || "Custom Biomarker";
+  const unit = document.getElementById("new-param-unit")?.value.trim() || "";
+  const min = parseFloat(document.getElementById("new-param-min")?.value || 0);
+  const max = parseFloat(document.getElementById("new-param-max")?.value || 100);
+  const step = parseFloat(document.getElementById("new-param-step")?.value || 1);
+  const val = parseFloat(document.getElementById("new-param-val")?.value || (min + max) / 2);
+  const target = document.getElementById("new-param-target")?.value || "il6_inflammation";
+  const dir = document.getElementById("new-param-dir")?.value || "positive";
+
+  customParameters.push({
+    id: "custom_" + Date.now(),
+    name: name,
+    unit: unit,
+    min: min,
+    max: max,
+    step: step,
+    value: val,
+    baseline: val,
+    target_axis: target,
+    direction: dir
+  });
+
+  renderCustomParams();
+  document.getElementById("add-param-form").style.display = "none";
+  schedulePatientSim();
+});
+
+window.removeCustomParam = function(idx) {
+  customParameters.splice(idx, 1);
+  renderCustomParams();
+  schedulePatientSim();
+};
+
+function renderCustomParams() {
+  const cont = document.getElementById("custom-params-list");
+  if (!cont) return;
+  if (customParameters.length === 0) {
+    cont.innerHTML = `<div id="custom-params-empty" style="font-size:0.72rem; color:var(--text-secondary); text-align:center; padding:10px; background:rgba(255,255,255,0.02); border-radius:6px;">No custom parameters added yet. Click <strong>+ Add Parameter</strong> to create custom lab biomarkers, drug clamps, or clinical challenges.</div>`;
+    return;
+  }
+
+  let html = "";
+  customParameters.forEach((cp, idx) => {
+    const targetLabel = cp.target_axis.replace(/_/g, ' ');
+    html += `
+      <div class="lab-slider-group" style="background:#161b22; padding:8px 10px; border-radius:6px; border:1px solid #30363d;">
+        <div class="lab-slider-header" style="margin-bottom:4px;">
+          <span><strong style="color:#3fb950;">⭐ ${cp.name}</strong> <span class="lab-ref">(${cp.unit}) ➔ ${targetLabel} (${cp.direction === 'positive' ? '+' : '-'})</span></span>
+          <span style="display:flex; align-items:center; gap:6px;">
+            <span class="lab-val" id="val-disp-custom-${idx}">${cp.value} ${cp.unit}</span>
+            <button class="btn btn-sm" onclick="removeCustomParam(${idx})" title="Remove parameter" style="padding:1px 6px; font-size:0.65rem; background:rgba(248,81,73,0.2); color:#f85149; border:1px solid rgba(248,81,73,0.4); cursor:pointer;">✕</button>
+          </span>
+        </div>
+        <input type="range" class="lab-slider" id="slider-custom-${idx}" min="${cp.min}" max="${cp.max}" step="${cp.step}" value="${cp.value}">
+      </div>
+    `;
+  });
+  cont.innerHTML = html;
+
+  customParameters.forEach((cp, idx) => {
+    const sl = document.getElementById(`slider-custom-${idx}`);
+    if (sl) {
+      sl.addEventListener("input", (e) => {
+        cp.value = parseFloat(e.target.value);
+        const disp = document.getElementById(`val-disp-custom-${idx}`);
+        if (disp) disp.innerText = cp.value + " " + cp.unit;
+        schedulePatientSim();
+      });
+    }
+  });
+}
 
 function applyPreset(key) {
   const p = biotypePresets[key];
@@ -2031,6 +2340,65 @@ function updatePrescriptionView(simData, payload) {
   }
 }
 
+function updateCascadeDisplay(casc) {
+  if (!casc) return;
+  const setEl = (id, val, text, col) => {
+    const elVal = document.getElementById(id);
+    if (elVal) {
+      elVal.innerText = text;
+      elVal.style.color = col;
+    }
+  };
+
+  // 1. Serotonin (5-HT)
+  setEl("casc-val-5ht", casc.serotonin_flux, casc.serotonin_flux.toFixed(3),
+    casc.serotonin_flux >= 0.8 ? "#3fb950" : (casc.serotonin_flux >= 0.5 ? "#d29922" : "#f85149"));
+  
+  // 2. Dopamine
+  setEl("casc-val-da", casc.dopamine_synthesis, casc.dopamine_synthesis.toFixed(3),
+    casc.dopamine_synthesis >= 0.35 ? "#3fb950" : (casc.dopamine_synthesis >= 0.22 ? "#d29922" : "#f85149"));
+
+  // 3. ATP Bioenergetics
+  setEl("casc-val-atp", casc.atp_bioenergetics, casc.atp_bioenergetics.toFixed(3),
+    casc.atp_bioenergetics >= 0.85 ? "#3fb950" : (casc.atp_bioenergetics >= 0.65 ? "#d29922" : "#f85149"));
+
+  // 4. QA/KA Excitotoxicity Ratio
+  setEl("casc-val-qaka", casc.qa_ka_ratio, casc.qa_ka_ratio.toFixed(2),
+    casc.qa_ka_ratio <= 2.2 ? "#3fb950" : (casc.qa_ka_ratio <= 3.0 ? "#d29922" : "#f85149"));
+
+  // 5. Allostatic Load L
+  setEl("casc-val-load", casc.allostatic_load_L, casc.allostatic_load_L.toFixed(3),
+    casc.allostatic_load_L <= 0.4 ? "#3fb950" : (casc.allostatic_load_L <= 0.75 ? "#d29922" : "#f85149"));
+
+  // 6. Mood Well State m
+  setEl("casc-val-mood", casc.mood_basin_m, casc.mood_basin_m.toFixed(3),
+    casc.mood_basin_m > 0 ? "#3fb950" : "#f85149");
+
+  // 7. HOMA-IR
+  setEl("casc-val-homa", casc.homa_ir, casc.homa_ir.toFixed(2),
+    casc.homa_ir <= 1.5 ? "#3fb950" : (casc.homa_ir <= 2.5 ? "#d29922" : "#f85149"));
+
+  // 8. Vagal Efferent
+  setEl("casc-val-vagal", casc.vagal_efferent, casc.vagal_efferent.toFixed(3),
+    casc.vagal_efferent >= 0.8 ? "#3fb950" : (casc.vagal_efferent >= 0.5 ? "#d29922" : "#f85149"));
+
+  // 9. Cytokine IL-6
+  setEl("casc-val-il6", casc.cytokine_il6, casc.cytokine_il6.toFixed(2),
+    casc.cytokine_il6 <= 2.0 ? "#3fb950" : (casc.cytokine_il6 <= 4.0 ? "#d29922" : "#f85149"));
+
+  // 10. DNIC Pain Gate
+  setEl("casc-val-dnic", casc.dnic_pain_gate, casc.dnic_pain_gate.toFixed(3),
+    casc.dnic_pain_gate >= 0.6 ? "#3fb950" : (casc.dnic_pain_gate >= 0.35 ? "#d29922" : "#f85149"));
+
+  // 11. Astrocytic EAAT2
+  setEl("casc-val-eaat2", casc.eaat2_clearance, casc.eaat2_clearance.toFixed(2),
+    casc.eaat2_clearance >= 1.5 ? "#3fb950" : (casc.eaat2_clearance >= 1.0 ? "#d29922" : "#f85149"));
+
+  // 12. Glymphatic SWS
+  setEl("casc-val-sleep", casc.sleep_sws_density, casc.sleep_sws_density.toFixed(2),
+    casc.sleep_sws_density >= 0.65 ? "#3fb950" : (casc.sleep_sws_density >= 0.4 ? "#d29922" : "#f85149"));
+}
+
 async function runPatientSim() {
   const fbs = parseFloat(document.getElementById("slider-fbs")?.value || 108);
   const insulin = parseFloat(document.getElementById("slider-insulin")?.value || 18.5);
@@ -2055,6 +2423,7 @@ async function runPatientSim() {
     social_support: parseFloat(document.getElementById("slider-social")?.value || 0.4),
     initial_m: parseFloat(document.getElementById("slider-initialm")?.value || -0.85),
     intervention: document.getElementById("select-patient-intervention")?.value || "none",
+    custom_parameters: customParameters,
     steps: 1440
   };
 
@@ -2080,6 +2449,11 @@ async function runPatientSim() {
     badge.innerText = data.basin_status;
     badge.style.color = data.final_m > 0 ? "#3fb950" : "#f85149";
     badge.style.background = data.final_m > 0 ? "rgba(63, 185, 80, 0.2)" : "rgba(248, 81, 73, 0.2)";
+
+    // Update Live Interconnected Parameter Cascade
+    if (data.downstream_cascade) {
+      updateCascadeDisplay(data.downstream_cascade);
+    }
 
     // Symptoms
     if (data.symptoms) {
