@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whole-Body Computational Psychiatry Clinical Workstation</title>
+<style>
+  :root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-card: #21262d;
+    --border: #30363d;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --accent-blue: #58a6ff;
+    --accent-green: #3fb950;
+    --accent-red: #f85149;
+    --accent-purple: #bc8cff;
+    --accent-orange: #f0883e;
+    --accent-yellow: #d29922;
+    --accent-pink: #f778ba;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  body { background: var(--bg-primary); color: var(--text-primary); overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+  
+  header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+  }
+  .title-group h1 { font-size: 1.05rem; font-weight: 700; color: #58a6ff; display: flex; align-items: center; gap: 8px; }
+  .title-group p { font-size: 0.72rem; color: var(--text-secondary); }
+  
+  .nav-tabs { display: flex; gap: 4px; background: #0d1117; padding: 3px; border-radius: 8px; border: 1px solid var(--border); }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text-primary); }
+  .tab-btn.active { background: var(--bg-card); color: var(--accent-blue); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+  .controls { display: flex; gap: 8px; align-items: center; }
+  .status-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: rgba(63, 185, 80, 0.15);
+    border: 1px solid rgba(63, 185, 80, 0.4);
+    color: #3fb950;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  .btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: #30363d; border-color: #8b949e; }
+  .btn.active { background: #1f6feb; border-color: #58a6ff; color: #fff; }
+  .btn-accent { background: #238636; border-color: #2ea043; color: #fff; }
+  .btn-accent:hover { background: #2ea043; }
+  .btn-sm { padding: 3px 8px; font-size: 0.7rem; }
+
+  #main-viewport { flex: 1; display: flex; position: relative; overflow: hidden; }
+
+  /* Tab Views */
+  .view-panel { display: none; width: 100%; height: 100%; }
+  .view-panel.active { display: flex; }
+
+  /* Tab 1: Graph */
+  #view-graph { display: none; width: 100%; height: 100%; }
+  #view-graph.active { display: flex; }
+  #canvas-container { flex: 1; position: relative; height: 100%; cursor: grab; background: #090d13; }
+  #canvas-container:active { cursor: grabbing; }
+  canvas#graph-canvas { display: block; width: 100%; height: 100%; }
+
+  .top-canvas-bar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(22, 27, 34, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.75rem;
+    z-index: 8;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+
+  #graph-sidebar {
+    width: 440px;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    z-index: 5;
+  }
+
+  .panel-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .panel-section h4 { font-size: 0.78rem; text-transform: uppercase; color: var(--accent-blue); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+
+  /* Cascade Cards */
+  .cascade-step {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent-orange);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    font-size: 0.75rem;
+  }
+  .cascade-step strong { display: block; color: var(--text-primary); margin-bottom: 2px; }
+  .cascade-step p { color: var(--text-secondary); line-height: 1.35; }
+
+  .clinical-pearl-box {
+    background: rgba(88, 166, 255, 0.08);
+    border: 1px solid rgba(88, 166, 255, 0.3);
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 0.75rem;
+  }
+  .clinical-pearl-box strong { color: #58a6ff; display: block; margin-bottom: 4px; }
+  .clinical-pearl-box p { color: #c9d1d9; line-height: 1.4; }
+
+  /* Tab 2: Virtual Patient Simulator & Clinical Workstation */
+  #view-patient {
+    padding: 16px 20px;
+    overflow-y: auto;
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  #view-patient.active { display: flex; }
+
+  .patient-layout {
+    display: grid;
+    grid-template-columns: 390px 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 1024px) {
+    .patient-layout { grid-template-columns: 1fr; }
+  }
+
+  .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  .card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .card-title {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--accent-blue);
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .lab-slider-group {
+    margin-bottom: 9px;
+  }
+  .lab-slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.73rem;
+    margin-bottom: 2px;
+  }
+  .lab-ref {
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+    font-weight: normal;
+  }
+  .lab-val {
+    font-family: monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--bg-card);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--accent-blue);
+  }
+  .lab-slider {
+    width: 100%;
+    height: 5px;
+    accent-color: var(--accent-blue);
+    background: var(--bg-card);
+    cursor: pointer;
+  }
+
+  .meter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.74rem;
+  }
+  .meter-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: #0d1117;
+    border-radius: 4px;
+    margin: 0 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .meter-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    transition: width 0.3s ease, background 0.3s ease;
+  }
+  .meter-score {
+    width: 38px;
+    text-align: right;
+    font-weight: 700;
+    font-family: monospace;
+    font-size: 0.75rem;
+  }
+
+  .alert-box {
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    line-height: 1.35;
+    margin-bottom: 6px;
+    border-left: 3px solid var(--accent-orange);
+    background: rgba(240, 136, 62, 0.08);
+    color: #f0883e;
+  }
+  .alert-box.green {
+    border-left-color: #3fb950;
+    background: rgba(63, 185, 80, 0.08);
+    color: #3fb950;
+  }
+
+  .pred-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .pred-label {
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .pred-val {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #58a6ff;
+    margin: 2px 0;
+  }
+  .pred-sub {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+  }
+
+  .param-badge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 6px;
+    font-size: 0.7rem;
+  }
+  .param-badge {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 4px 6px;
+    border-radius: 5px;
+  }
+  .param-badge span { color: var(--text-secondary); display: block; font-size: 0.62rem; }
+  .param-badge strong { color: #58a6ff; font-size: 0.78rem; }
+
+  #ode-chart-patient {
+    width: 100%;
+    height: 190px;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  /* Tab 3: Clamps & BOED */
+  #view-clamps {
+    padding: 20px;
+    overflow-y: auto;
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  #view-clamps.active { display: flex; }
+
+  /* Tab 4: Validation & Biotypes */
+  #view-validation {
+    padding: 20px;
+    overflow-y: auto;
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  #view-validation.active { display: flex; }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-val { font-size: 1.6rem; font-weight: 800; color: #58a6ff; margin: 4px 0; }
+  .stat-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; }
+  .stat-pass { color: var(--accent-green); font-size: 0.75rem; font-weight: bold; }
+
+  .tooltip {
+    position: absolute;
+    background: rgba(33, 38, 45, 0.95);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    pointer-events: none;
+    display: none;
+    z-index: 100;
+    max-width: 280px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  }
+  .tooltip strong { color: #58a6ff; display: block; margin-bottom: 2px; }
+  .tooltip small { color: #8b949e; display: block; margin-top: 3px; }
+  .badge-tag {
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 6px;
+  }
+  .badge-def { background: rgba(248, 81, 73, 0.2); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.4); }
+  .badge-low { background: rgba(210, 153, 34, 0.2); color: #d29922; border: 1px solid rgba(210, 153, 34, 0.4); }
+  .badge-norm { background: rgba(63, 185, 80, 0.2); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.4); }
+  .badge-high { background: rgba(248, 81, 73, 0.2); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.4); }
+
+  /* Tab 5 / Rx View: Doctor's Clinical Requisition & Consultation Slip */
+  #view-rx {
+    padding: 20px;
+    overflow-y: auto;
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  #view-rx.active { display: flex; }
+
+  .rx-sheet {
+    background: #ffffff;
+    color: #1a1a1a;
+    border-radius: 8px;
+    padding: 28px 36px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  .rx-header-top {
+    border-bottom: 2px solid #003366;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .rx-clinic-name h2 { font-size: 1.35rem; font-weight: 800; color: #003366; letter-spacing: -0.3px; margin-bottom: 3px; }
+  .rx-clinic-name p { font-size: 0.8rem; color: #4a5568; margin-bottom: 2px; }
+  .rx-doc-meta { text-align: right; font-size: 0.78rem; color: #4a5568; }
+  .rx-doc-meta strong { color: #003366; font-size: 0.88rem; }
+
+  .rx-patient-bar {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    font-size: 0.8rem;
+    margin-bottom: 18px;
+    color: #2d3748;
+  }
+  .rx-patient-bar span { color: #718096; font-size: 0.72rem; display: block; }
+  .rx-patient-bar strong { color: #1a202c; }
+
+  .rx-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #003366;
+    border-bottom: 1.5px solid #cbd5e0;
+    padding-bottom: 5px;
+    margin: 18px 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .rx-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 0.82rem;
+  }
+  .rx-table th {
+    background: #edf2f7;
+    color: #2d3748;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 2px solid #cbd5e0;
+    font-weight: 700;
+  }
+  .rx-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #2d3748;
+  }
+  .rx-table tr:hover td { background: #f8fafc; }
+
+  .rx-lab-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 16px;
+    margin-bottom: 14px;
+    font-size: 0.8rem;
+  }
+  .rx-lab-item {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #2d3748;
+  }
+
+  .rx-alert-card {
+    background: #fffaf0;
+    border-left: 4px solid #dd6b20;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #7b341e;
+    margin-bottom: 14px;
+    line-height: 1.45;
+  }
+
+  .rx-pearl-card {
+    background: #ebf8ff;
+    border-left: 4px solid #3182ce;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #2b6cb0;
+    margin-bottom: 14px;
+    line-height: 1.45;
+  }
+
+  .rx-footer {
+    margin-top: 32px;
+    padding-top: 18px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 0.78rem;
+    color: #718096;
+  }
+
+  @media print {
+    body { background: #ffffff !important; overflow: visible !important; }
+    header, .nav-tabs, .top-canvas-bar, .controls, #view-graph, #view-patient, #view-clamps, #view-validation { display: none !important; }
+    #main-viewport { overflow: visible !important; display: block !important; }
+    #view-rx { display: block !important; padding: 0 !important; max-width: 100% !important; }
+    .rx-sheet { box-shadow: none !important; border: none !important; padding: 0 !important; }
+    .no-print { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-group">
+    <h1><span>🩺</span> Whole-Body Clinical Psychiatry Workstation (Indian Clinical Standards)</h1>
+    <p>NABL Diagnostic Units (ng/mL, µg/dL, mg/dL, pg/mL) · South Asian Metabolic Phenotype · Physician Rx Requisition</p>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" data-tab="graph">🫀 Organ Body Map &amp; Cascades</button>
+    <button class="tab-btn" data-tab="patient">🏥 Patient &amp; Indian Labs</button>
+    <button class="tab-btn" data-tab="rx">📋 Doctor's Consultation &amp; Rx</button>
+    <button class="tab-btn" data-tab="clamps">🧪 Dynamic Lab Clamps</button>
+    <button class="tab-btn" data-tab="validation">📊 Clinical Trial Validation</button>
+  </div>
+
+  <div class="controls">
+    <div class="status-pill" id="backend-status"><span class="status-dot"></span> Workstation Live</div>
+    <button class="btn btn-accent" id="btn-header-export">Export Patient Trajectory</button>
+  </div>
+</header>
+
+<div id="main-viewport">
+  <!-- TAB 1: Mega-Graph View -->
+  <div class="view-panel active" id="view-graph">
+    
+    <div class="top-canvas-bar">
+      <span style="font-weight:600; color:var(--text-secondary);">Display Mode:</span>
+      <div style="display:flex; gap:4px;">
+        <button class="btn btn-sm active" id="btn-mode-anatomy">🫀 Human Organ Anatomy</button>
+        <button class="btn btn-sm" id="btn-mode-topology">🕸️ Network Topology</button>
+      </div>
+
+      <span style="color:var(--border);">|</span>
+
+      <span style="font-weight:600; color:#f0883e;">⚡ Simulate Clinical Cascade:</span>
+      <select id="select-clinical-cascade" style="background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:3px 8px; border-radius:6px; font-size:0.75rem;">
+        <option value="none">-- Select a clinical disturbance --</option>
+        <option value="fe_deficiency" selected>🩸 Iron (Fe²⁺) Deficiency (Ferritin Depletion)</option>
+        <option value="leaky_gut">🦠 Gut Dysbiosis & Endotoxemia (High LPS & IL-6)</option>
+        <option value="zn_deficiency">⚡ Zinc Deficiency (KAT Arrest & Excitotoxicity)</option>
+        <option value="se_deficiency">🧪 Selenium Deficiency (Brain Hypothyroidism / Low T3)</option>
+        <option value="vagus_collapse">🫀 Vagal Exhaustion (Loss of Cholinergic Anti-Inflammatory Shield)</option>
+        <option value="insulin_resistance">🍔 Insulin Resistance (Cerebral Bioenergetic Starvation)</option>
+      </select>
+    </div>
+
+    <div id="canvas-container">
+      <canvas id="graph-canvas"></canvas>
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <div id="graph-sidebar">
+      <!-- Clinical Cascade Details -->
+      <div class="panel-section" id="cascade-panel">
+        <h4><span>⚡ Active Pathophysiological Cascade</span> <span id="cascade-badge" style="font-size:0.68rem; padding:2px 6px; border-radius:4px; background:rgba(240,136,62,0.2); color:#f0883e;">Simulated</span></h4>
+        <div id="cascade-content">
+          <!-- Filled dynamically by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Node & Pathway Inspector -->
+      <div class="panel-section">
+        <h4><span>🔍 Organ & Biomarker Inspector</span></h4>
+        <div id="node-inspector">
+          <p style="font-size:0.75rem; color:var(--text-secondary);">Click any organ or biomarker node on the body diagram to inspect normal lab reference ranges, pathophysiological role, and clinical management.</p>
+        </div>
+      </div>
+
+      <!-- Mood Landscape -->
+      <div class="panel-section">
+        <h4><span>🧠 Mood State Potential Basin U(m)</span></h4>
+        <div style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:6px;">
+          Physiological bistability: Depressive Sinking Well (<span style="color:#f85149;">m &lt; 0</span>) vs. Resilient Euthymia (<span style="color:#3fb950;">m &gt; 0</span>).
+        </div>
+        <canvas id="mini-landscape" style="width:100%; height:90px; background:#0d1117; border-radius:6px; border:1px solid var(--border);"></canvas>
+        <div id="landscape-status" style="margin-top:4px; font-size:0.72rem; font-weight:bold; text-align:center;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Virtual Patient Simulator & Physician Clinical Workstation -->
+  <div class="view-panel" id="view-patient">
+    <!-- Presets & Simulation Header -->
+    <div class="card" style="padding:10px 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-weight:700; color:var(--accent-blue); font-size:0.8rem;">🩺 Indian Patient Preset:</span>
+          <select id="select-profile" style="background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:5px 10px; border-radius:6px; font-size:0.75rem; font-weight:500;">
+            <option value="indian_veg_anhedonia" selected>Biotype 1: Indian Vegetarian Anhedonia (Severe B12 + Ferritin + Zn Deficit)</option>
+            <option value="south_asian_metabolic">Biotype 2: South Asian Metabolic-Inflammatory MDD (HOMA-IR > 4.5, hs-CRP > 3.0)</option>
+            <option value="inflammatory_kynurenine">Biotype 3: Neuro-Inflammatory / Leaky Gut (IL-6 8.5 pg/mL, QA/KA Excitotoxicity)</option>
+            <option value="melancholic_hpa_failure">Biotype 4: Melancholic HPA Non-Suppressor (DEX 3.8 µg/dL, High Relapse Risk)</option>
+            <option value="euthymic_healthy">Biotype 5: Resilient Indian Adult Baseline (Healthy Diagnostic References)</option>
+          </select>
+          <button class="btn btn-sm" id="btn-reset-ranges">↺ Reset Defaults</button>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-weight:700; color:#f0883e; font-size:0.8rem;">⚡ Treatment Protocol:</span>
+          <select id="select-patient-intervention" style="background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border); padding:5px 10px; border-radius:6px; font-size:0.75rem;">
+            <option value="none">Natural History (Untreated Sinking State)</option>
+            <option value="repletion" selected>Nutritional Repletion: Fe²⁺ (100mg) + B12 (1500µg) + Zn + Mg</option>
+            <option value="ssri">Escitalopram / Sertraline Monotherapy (SSRI alone)</option>
+            <option value="rtms">Left DLPFC 10 Hz rTMS (Cortical EAAT2 Upregulation)</option>
+            <option value="ketogenic">Metabolic / Ketogenic Diet (Mitochondrial BHB Bypass)</option>
+            <option value="full_stack">Multi-Target Protocol: Repletion + SSRI + rTMS + Keto</option>
+          </select>
+          <button class="btn btn-accent" id="btn-run-patient-sim" style="font-weight:bold;">▶ Run Simulation</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Two-Column Workstation Layout -->
+    <div class="patient-layout">
+      <!-- Left Column: Laboratory Panel & NPE Inversion -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <!-- Lab Sliders Card -->
+        <div class="card">
+          <div class="card-title">
+            <span>🧪 Clinical Laboratory Panel (Indian NABL Units)</span>
+            <span style="font-size:0.7rem; color:var(--accent-blue); font-weight:600;">Dr Lal / SRL / AIIMS Standards</span>
+          </div>
+
+          <div style="font-size:0.68rem; font-weight:700; color:var(--accent-orange); margin:6px 0 4px 0; text-transform:uppercase; letter-spacing:0.5px;">🩸 Hematology &amp; Iron Studies</div>
+          
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Serum Ferritin</strong> <span class="lab-ref">(Ref: 30–300 ng/mL)</span></span>
+              <span><span class="lab-val" id="val-disp-ferritin">14 ng/mL</span><span class="badge-tag badge-def" id="badge-ferritin">DEFICIENT</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-ferritin" min="5" max="300" step="1" value="14">
+          </div>
+
+          <div style="font-size:0.68rem; font-weight:700; color:#bc8cff; margin:10px 0 4px 0; text-transform:uppercase; letter-spacing:0.5px;">💊 Neuro-Vitamins &amp; Trace Cofactors</div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Vitamin B12 (Cobalamin)</strong> <span class="lab-ref">(Ref: 211–911 pg/mL)</span></span>
+              <span><span class="lab-val" id="val-disp-b12">140 pg/mL</span><span class="badge-tag badge-def" id="badge-b12">DEFICIENT</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-b12" min="50" max="1000" step="10" value="140">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>25-OH Vitamin D3</strong> <span class="lab-ref">(Ref: 30–100 ng/mL)</span></span>
+              <span><span class="lab-val" id="val-disp-vitd">16 ng/mL</span><span class="badge-tag badge-def" id="badge-vitd">DEFICIENT</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-vitd" min="5" max="100" step="1" value="16">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Serum Zinc</strong> <span class="lab-ref">(Ref: 70–120 µg/dL)</span></span>
+              <span><span class="lab-val" id="val-disp-zinc">52 µg/dL</span><span class="badge-tag badge-low" id="badge-zinc">LOW</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-zinc" min="20" max="150" step="1" value="52">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Serum Selenium</strong> <span class="lab-ref">(Ref: 70–150 µg/L)</span></span>
+              <span><span class="lab-val" id="val-disp-selenium">65 µg/L</span><span class="badge-tag badge-low" id="badge-selenium">LOW</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-selenium" min="20" max="180" step="1" value="65">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Serum Magnesium</strong> <span class="lab-ref">(Ref: 1.8–2.4 mg/dL)</span></span>
+              <span><span class="lab-val" id="val-disp-magnesium">1.7 mg/dL</span><span class="badge-tag badge-low" id="badge-magnesium">LOW</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-magnesium" min="1.0" max="3.0" step="0.05" value="1.7">
+          </div>
+
+          <div style="font-size:0.68rem; font-weight:700; color:#d29922; margin:10px 0 4px 0; text-transform:uppercase; letter-spacing:0.5px;">🍔 South Asian Metabolic &amp; Glycemic Profile</div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Fasting Blood Sugar (FBS)</strong> <span class="lab-ref">(Ref: 70–99 mg/dL)</span></span>
+              <span><span class="lab-val" id="val-disp-fbs">108 mg/dL</span><span class="badge-tag badge-low" id="badge-fbs">PREDIABETIC</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-fbs" min="60" max="250" step="1" value="108">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Fasting Serum Insulin</strong> <span class="lab-ref">(Ref: 2.6–24.9 µIU/mL)</span></span>
+              <span><span class="lab-val" id="val-disp-insulin">18.5 µIU/mL</span><span class="badge-tag badge-norm" id="badge-insulin">NORMAL</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-insulin" min="2.0" max="60.0" step="0.5" value="18.5">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Calculated HOMA-IR</strong> <span class="lab-ref">(Ref: &lt;1.5; &gt;2.5 Resistant)</span></span>
+              <span><span class="lab-val" id="val-disp-homa">4.93</span><span class="badge-tag badge-high" id="badge-homa">RESISTANT</span></span>
+            </div>
+          </div>
+
+          <div style="font-size:0.68rem; font-weight:700; color:#58a6ff; margin:10px 0 4px 0; text-transform:uppercase; letter-spacing:0.5px;">🗣️ Thyroid &amp; HPA Stress Axis</div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>TSH (Thyroid Stimulating)</strong> <span class="lab-ref">(Ref: 0.4–4.5 µIU/mL)</span></span>
+              <span><span class="lab-val" id="val-disp-tsh">3.8 µIU/mL</span><span class="badge-tag badge-norm" id="badge-tsh">NORMAL</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-tsh" min="0.2" max="10.0" step="0.1" value="3.8">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Post-1mg DEX Cortisol</strong> <span class="lab-ref">(Ref: &lt;1.8 µg/dL normal)</span></span>
+              <span><span class="lab-val" id="val-disp-dex">3.2 µg/dL</span><span class="badge-tag badge-high" id="badge-dex">NON-SUPPRESSOR</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-dex" min="0.4" max="10.0" step="0.1" value="3.2">
+          </div>
+
+          <div style="font-size:0.68rem; font-weight:700; color:#f85149; margin:10px 0 4px 0; text-transform:uppercase; letter-spacing:0.5px;">🛡️ Inflammation &amp; Gut-Vagal Shield</div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>High-Sensitivity CRP (hs-CRP)</strong> <span class="lab-ref">(Ref: &lt;1.0 mg/L)</span></span>
+              <span><span class="lab-val" id="val-disp-hscrp">3.4 mg/L</span><span class="badge-tag badge-high" id="badge-hscrp">HIGH RISK</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-hscrp" min="0.1" max="15.0" step="0.1" value="3.4">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Interleukin-6 (IL-6)</strong> <span class="lab-ref">(Ref: &lt;5.0 pg/mL)</span></span>
+              <span><span class="lab-val" id="val-disp-il6">4.5 pg/mL</span><span class="badge-tag badge-norm" id="badge-il6">NORMAL</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-il6" min="0.2" max="15.0" step="0.1" value="4.5">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>HRV RMSSD (Vagal Tone)</strong> <span class="lab-ref">(Ref: 35–70 ms)</span></span>
+              <span><span class="lab-val" id="val-disp-rmssd">22 ms</span><span class="badge-tag badge-low" id="badge-rmssd">DEPLETED</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-rmssd" min="10" max="80" step="1" value="22">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Gut Endotoxin LPS</strong> <span class="lab-ref">(Ref: &lt;0.2 EU/mL)</span></span>
+              <span><span class="lab-val" id="val-disp-lps">0.60 EU/mL</span><span class="badge-tag badge-high" id="badge-lps">ELEVATED</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-lps" min="0.0" max="2.0" step="0.05" value="0.6">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Family / Social Support</strong> <span class="lab-ref">(Ref: &gt;0.7)</span></span>
+              <span><span class="lab-val" id="val-disp-social">0.40</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-social" min="0.0" max="1.0" step="0.05" value="0.4">
+          </div>
+
+          <div class="lab-slider-group">
+            <div class="lab-slider-header">
+              <span><strong>Initial Mood State m₀</strong> <span class="lab-ref">(-1.0 Sinking, +1.0 Euthymic)</span></span>
+              <span><span class="lab-val" id="val-disp-initialm">-0.85</span></span>
+            </div>
+            <input type="range" class="lab-slider" id="slider-initialm" min="-1.2" max="1.2" step="0.05" value="-0.85">
+          </div>
+        </div>
+
+        <!-- Latent Inversion Card -->
+        <div class="card">
+          <div class="card-title">
+            <span>⚡ Amortized NPE Latent Inversion</span>
+            <button class="btn btn-sm btn-accent" id="btn-infer-patient">Run Inversion</button>
+          </div>
+          <p style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:8px;">Inverts observable clinical labs into 16 intracellular/micro-kinetic parameters with posterior contraction:</p>
+          <div class="param-badge-grid" id="patient-params-container">
+            <div style="grid-column: 1 / -1; color:var(--text-secondary); font-size:0.75rem;">Click "Run Inversion" to compute posterior shrinkage...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Directives, Symptoms, Predictions, Trajectory -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <!-- Physician Directives & Alerts -->
+        <div class="card" id="alerts-card">
+          <div class="card-title" style="margin-bottom:8px;">
+            <span>🛡️ Physician Clinical Directives &amp; Contraindications</span>
+            <span id="basin-badge" style="font-size:0.72rem; padding:3px 8px; border-radius:4px; background:rgba(248,81,73,0.2); color:#f85149; font-weight:bold;">Depressive Sinking Well</span>
+          </div>
+          <div id="clinical-alerts-list">
+            <div class="alert-box">Analyzing biomarker profile...</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Symptom Severity Gauges (0 - 10) -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:8px;">
+            <span>📊 Dynamic Clinical Symptom Severity Triage (0–10 Scale)</span>
+            <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:normal;">0–3 Mild | 4–6 Moderate | 7–10 Severe</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 18px;">
+            <div class="meter-row">
+              <span style="width:130px; font-size:0.75rem;">Anhedonia &amp; Blunting:</span>
+              <div class="meter-bar-bg"><div class="meter-bar-fill" id="meter-anhedonia" style="width:0%;"></div></div>
+              <span class="meter-score" id="score-anhedonia">--</span>
+            </div>
+            <div class="meter-row">
+              <span style="width:130px; font-size:0.75rem;">Bioenergetic Fatigue:</span>
+              <div class="meter-bar-bg"><div class="meter-bar-fill" id="meter-fatigue" style="width:0%;"></div></div>
+              <span class="meter-score" id="score-fatigue">--</span>
+            </div>
+            <div class="meter-row">
+              <span style="width:130px; font-size:0.75rem;">Cognitive Brain Fog:</span>
+              <div class="meter-bar-bg"><div class="meter-bar-fill" id="meter-fog" style="width:0%;"></div></div>
+              <span class="meter-score" id="score-fog">--</span>
+            </div>
+            <div class="meter-row">
+              <span style="width:130px; font-size:0.75rem;">Somatic Pain Amplification:</span>
+              <div class="meter-bar-bg"><div class="meter-bar-fill" id="meter-pain" style="width:0%;"></div></div>
+              <span class="meter-score" id="score-pain">--</span>
+            </div>
+            <div class="meter-row">
+              <span style="width:130px; font-size:0.75rem;">Sleep Disruption (SWS):</span>
+              <div class="meter-bar-bg"><div class="meter-bar-fill" id="meter-sleep" style="width:0%;"></div></div>
+              <span class="meter-score" id="score-sleep">--</span>
+            </div>
+            <div class="meter-row">
+              <span style="width:130px; font-size:0.75rem;">Depressive Sinking Risk:</span>
+              <div class="meter-bar-bg"><div class="meter-bar-fill" id="meter-sinking" style="width:0%;"></div></div>
+              <span class="meter-score" id="score-sinking">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Treatment Efficacy Predictions -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:8px;">
+            <span>💊 Biomarker-Guided Treatment Response Likelihood (%)</span>
+            <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:normal;">Predictive Response Probabilities</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;">
+            <div class="pred-card">
+              <div class="pred-label">SSRI Monotherapy</div>
+              <div class="pred-val" id="pred-ssri">--</div>
+              <div class="pred-sub" id="pred-ssri-sub">TPH2 / Serotonin</div>
+            </div>
+            <div class="pred-card">
+              <div class="pred-label">Left DLPFC rTMS</div>
+              <div class="pred-val" id="pred-rtms">--</div>
+              <div class="pred-sub" id="pred-rtms-sub">Glutamate EAAT2</div>
+            </div>
+            <div class="pred-card">
+              <div class="pred-label">Ketamine (NMDA-Ant)</div>
+              <div class="pred-val" id="pred-ketamine">--</div>
+              <div class="pred-sub" id="pred-ketamine-sub">QA Excitotoxicity</div>
+            </div>
+            <div class="pred-card">
+              <div class="pred-label">Trace Repletion</div>
+              <div class="pred-val" id="pred-trace">--</div>
+              <div class="pred-sub" id="pred-trace-sub">Fe + Zn + Se + Mg</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 72-Hour Longitudinal Patient Trajectory -->
+        <div class="card">
+          <div class="card-title">
+            <span>📈 72-Hour Multi-Channel Physiological Trajectory</span>
+            <div style="display:flex; gap:12px; font-size:0.72rem; align-items:center;">
+              <span style="color:#58a6ff;"><span style="display:inline-block;width:10px;height:3px;background:#58a6ff;vertical-align:middle;margin-right:3px;"></span>Mood (m)</span>
+              <span style="color:#f85149;"><span style="display:inline-block;width:10px;height:3px;background:#f85149;vertical-align:middle;margin-right:3px;"></span>Load (L)</span>
+              <span style="color:#f0883e;"><span style="display:inline-block;width:10px;height:3px;background:#f0883e;vertical-align:middle;margin-right:3px;"></span>QA/KA</span>
+              <span style="color:#bc8cff;"><span style="display:inline-block;width:10px;height:3px;background:#bc8cff;vertical-align:middle;margin-right:3px;"></span>5-HT</span>
+              <span style="color:#d29922;"><span style="display:inline-block;width:10px;height:3px;background:#d29922;vertical-align:middle;margin-right:3px;"></span>Dopamine</span>
+              <span style="color:#3fb950;"><span style="display:inline-block;width:10px;height:3px;background:#3fb950;vertical-align:middle;margin-right:3px;"></span>ATP</span>
+            </div>
+          </div>
+          <div style="position:relative; width:100%; height:190px;">
+            <canvas id="ode-chart-patient" style="width:100%; height:100%; display:block;"></canvas>
+            <div id="chart-hover-info" style="display:none; position:absolute; top:8px; right:12px; background:rgba(22,27,34,0.92); border:1px solid var(--border); border-radius:6px; padding:4px 8px; font-size:0.7rem; pointer-events:none; color:var(--text-primary); z-index:10;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:0.75rem; background:var(--bg-card); padding:6px 12px; border-radius:6px; border:1px solid var(--border);">
+            <span>Mood m: <strong id="p-metric-m" style="color:#58a6ff;">--</strong></span>
+            <span>Allostatic Load L: <strong id="p-metric-L" style="color:#f85149;">--</strong></span>
+            <span>QA/KA Excitotoxicity: <strong id="p-metric-qaka" style="color:#f0883e;">--</strong></span>
+            <span>Basin: <strong id="p-metric-basin">--</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Doctor's Clinical Consultation & Rx Requisition (Indian NABL Standards) -->
+  <div class="view-panel" id="view-rx">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;" class="no-print">
+      <div style="font-size:0.85rem; color:var(--text-secondary);">
+        <strong style="color:var(--accent-blue);">🩺 Physician Consultation Advisory &amp; Requisition:</strong> Generated directly from multi-scale biophysical patient model.
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-sm btn-accent" id="btn-print-rx">🖨️ Print Prescription Slip / Save PDF</button>
+        <button class="btn btn-sm" id="btn-copy-rx">📋 Copy Rx to Clipboard</button>
+      </div>
+    </div>
+
+    <!-- Printable Clinical Consultation Letterhead -->
+    <div class="rx-sheet" id="rx-printable-sheet">
+      <div class="rx-header-top">
+        <div class="rx-clinic-name">
+          <h2>DEPARTMENT OF COMPUTATIONAL NEUROPSYCHIATRY</h2>
+          <p><strong>Whole-Body Metabolic-Endocrine Clinical Decision Support (CDS)</strong></p>
+          <p style="font-size:0.75rem; color:#718096;">NABL Accredited Diagnostics · Indian Psychiatric Society &amp; RSSDI Guidelines</p>
+        </div>
+        <div class="rx-doc-meta">
+          <strong>Treating Neuropsychiatrist / Physician</strong><br>
+          MBBS, MD (Psychiatry), DNB<br>
+          Regn. No: MCI/IPS-2026-IND<br>
+          Date: <span id="rx-date"></span>
+        </div>
+      </div>
+
+      <!-- Patient Bio-Demographic Bar -->
+      <div class="rx-patient-bar">
+        <div>
+          <span>PATIENT PROFILE:</span>
+          <strong id="rx-pat-profile">Indian Vegetarian Anhedonia</strong>
+        </div>
+        <div>
+          <span>ESTIMATED HAM-D / MADRS:</span>
+          <strong id="rx-pat-hamd">Severe (Score: 24/52)</strong>
+        </div>
+        <div>
+          <span>METABOLIC HOMA-IR:</span>
+          <strong id="rx-pat-homa">4.93 (Insulin Resistant)</strong>
+        </div>
+        <div>
+          <span>HPA AXIS STATUS:</span>
+          <strong id="rx-pat-dex">Non-Suppressor (High Melancholic Risk)</strong>
+        </div>
+      </div>
+
+      <!-- Clinical Diagnostic Directives -->
+      <div class="rx-section-title">🛡️ Clinical Pathophysiological Diagnostic Summary</div>
+      <div id="rx-alerts-container">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Diagnostic Investigation Order (NABL Standard Tests) -->
+      <div class="rx-section-title">🧪 Diagnostic Pathology Laboratory Orders (NABL Standards)</div>
+      <p style="font-size:0.76rem; color:#4a5568; margin-bottom:8px;">Please advise patient to provide 12-hour fasting blood sample at NABL accredited pathology lab:</p>
+      <div class="rx-lab-grid" id="rx-lab-orders-list">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Pharmacological & Nutraceutical Prescription -->
+      <div class="rx-section-title">💊 Targeted Pharmacotherapy &amp; Nutraceutical Prescriptions (Rx)</div>
+      <table class="rx-table">
+        <thead>
+          <tr>
+            <th style="width:38%;">Formulation / Molecule</th>
+            <th style="width:24%;">Dosage &amp; Timing</th>
+            <th style="width:18%;">Duration</th>
+            <th style="width:20%;">Clinical Rationale</th>
+          </tr>
+        </thead>
+        <tbody id="rx-prescriptions-body">
+          <!-- Rendered dynamically -->
+        </tbody>
+      </table>
+
+      <!-- Interventional Neuromodulation & Lifestyle -->
+      <div class="rx-section-title">⚡ Interventional Neuromodulation &amp; Lifestyle Management</div>
+      <div class="rx-pearl-card" id="rx-interventional-content">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Physician Clinical Pearl -->
+      <div class="rx-section-title">💡 Mechanism-Based Clinical Pearls for the Treating Physician</div>
+      <div class="rx-alert-card">
+        <strong>⚠️ Crucial Clinical Alert on SSRI "Pseudo-Resistance" in Indian Practice:</strong><br>
+        Standard SSRIs (Escitalopram / Sertraline) act purely on the SERT reuptake transporter. They do not increase monoamine synthesis. In patients with low ferritin (&lt; 30 ng/mL) or low Vitamin B12 (&lt; 211 pg/mL)—very frequent in vegetarian diets across India—the rate-limiting synthetic enzymes (TPH2 and Tyrosine Hydroxylase) are stalled. Inhibiting reuptake of an empty serotonin synaptic vesicle causes clinical failure, emotional blunting, and apathy. <strong>Always restore ferritin &gt; 50 ng/mL and Vitamin B12 &gt; 400 pg/mL before concluding treatment-resistant depression.</strong>
+      </div>
+
+      <!-- Doctor Signature Footer -->
+      <div class="rx-footer">
+        <div>
+          <em>Electronic Decision Support Requisition generated via Whole-Body Computational Engine.</em><br>
+          <em>Valid for clinical review and counter-signature by registered medical practitioner.</em>
+        </div>
+        <div style="text-align:right;">
+          <div style="height:35px;"></div>
+          <strong>Dr. Treating Physician, MD</strong><br>
+          <span style="font-size:0.72rem; color:#a0aec0;">Consultant Neuropsychiatrist</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Diagnostic Clamps & BOED -->
+  <div class="view-panel" id="view-clamps">
+    <div class="card">
+      <div class="card-title">Bayesian Optimal Dynamic Provocation (BOED)</div>
+      <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:12px;">Dynamic provocation tests (DEX suppression, oral tryptophan challenge, trace element loading) eliminate diagnostic collinearity:</p>
+      <button class="btn btn-accent" id="btn-run-boed">🎯 Compute Optimal Dynamic Provocation</button>
+      <div id="boed-results" style="margin-top:12px; display:none;">
+        <div style="padding:10px; background:rgba(88,166,255,0.1); border:1px solid #58a6ff; border-radius:6px; font-size:0.8rem; margin-bottom:12px;">
+          Recommended Diagnostic Test: <strong id="boed-best" style="color:#58a6ff;">--</strong>
+        </div>
+        <div class="grid-3col" id="boed-gains-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Validation Battery & EMBARC -->
+  <div class="view-panel" id="view-validation">
+    <div class="card">
+      <div class="card-title">
+        <span>Prospective Clinical Trial Validation (EMBARC Battery)</span>
+        <button class="btn btn-accent" id="btn-run-validation">Run Clinical Validation Battery</button>
+      </div>
+      <div class="grid-3col" style="margin-top:12px;">
+        <div class="stat-card">
+          <div class="stat-label">Parameter Recovery R²</div>
+          <div class="stat-val" id="val-r2">--</div>
+          <div class="stat-pass" id="pass-r2">Clinical Gate: R² &ge; 0.75</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sertraline ROC-AUC</div>
+          <div class="stat-val" id="val-auc">--</div>
+          <div class="stat-pass" id="pass-auc">Clinical Gate: AUC &ge; 0.60</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Drug vs. Placebo Divergence</div>
+          <div class="stat-val" id="val-div">--</div>
+          <div class="stat-pass" id="pass-div">Clinical Gate: &Delta; &ge; 0.10</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>Empirical Bayes Biotype Stratification</span>
+        <button class="btn" id="btn-run-biotypes">Extract Patient Biotypes</button>
+      </div>
+      <div id="biotypes-results" style="margin-top:10px; font-size:0.8rem;">
+        <p style="color:var(--text-secondary);">Click "Extract Patient Biotypes" to compute cohort variance decomposition...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- Navigation Tabs ---
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    const tabId = btn.dataset.tab;
+    const panel = document.getElementById("view-" + tabId);
+    if (panel) panel.classList.add("active");
+    if (tabId === "graph") resizeCanvas();
+    if (tabId === "patient") setTimeout(drawPatientTrajectory, 50);
+  });
+});
+
+// --- Tab 1: Clinical Body Anatomy & Graph Engine ---
+let currentLayout = "anatomy"; // "anatomy" or "topology"
+let activeCascadeKey = "fe_deficiency";
+let pulsePhase = 0;
+
+// Anatomical Organ Zones
+const ORGAN_ZONES = [
+  { id: "brain", name: "🧠 BRAIN & CENTRAL SYNAPSES", x: -210, y: -340, w: 420, h: 200, color: "rgba(188, 140, 255, 0.08)", border: "#bc8cff" },
+  { id: "thyroid", name: "🗣️ THYROID & HPT AXIS", x: -120, y: -115, w: 240, h: 70, color: "rgba(88, 166, 255, 0.08)", border: "#58a6ff" },
+  { id: "autonomic", name: "🫀 HEART & VAGUS AUTONOMIC", x: -130, y: -20, w: 260, h: 80, color: "rgba(63, 185, 80, 0.08)", border: "#3fb950" },
+  { id: "metabolic", name: "🥩 LIVER & CELLULAR BIOENERGETICS", x: -140, y: 85, w: 280, h: 85, color: "rgba(210, 153, 34, 0.08)", border: "#d29922" },
+  { id: "gut", name: "🦠 GUT MICROBIOME & ENTERIC MUCOSA", x: -210, y: 195, w: 420, h: 100, color: "rgba(248, 81, 73, 0.08)", border: "#f85149" },
+  { id: "blood", name: "🩸 BLOOD & MICRONUTRIENTS", x: -390, y: -260, w: 155, h: 360, color: "rgba(240, 136, 62, 0.08)", border: "#f0883e" },
+  { id: "syndrome", name: "🏥 CLINICAL SYNDROME & BASIN", x: 235, y: -40, w: 165, h: 340, color: "rgba(247, 120, 186, 0.08)", border: "#f778ba" }
+];
+
+const NODES = [
+  // Blood / Micronutrients (Indian Clinical Units - NABL)
+  { id: "fe", label: "Iron (Fe²⁺) [Ferritin]", organ: "Blood & Bone Marrow", ref: "Serum Ferritin: 30–300 ng/mL (NABL)", desc: "Obligate cofactor for TPH2 (5-HT synthesis), TH (dopamine synthesis), and Mitochondrial Complexes I-IV. Target > 50 ng/mL before SSRI therapy.", topo_x: -280, topo_y: -160, anat_x: -315, anat_y: -210, color: "#f0883e" },
+  { id: "b12", label: "Vitamin B12 (Cobalamin)", organ: "Blood & Hepatic", ref: "Serum B12: 211–911 pg/mL (<200 Deficient)", desc: "Essential cofactor for Methionine Synthase, SAMe generation, and BH4 replenishment in monoaminergic neurons. Widespread deficiency in Indian vegetarians.", topo_x: -350, topo_y: -10, anat_x: -315, anat_y: -90, color: "#f0883e" },
+  { id: "zn", label: "Zinc (Zn²⁺)", organ: "Blood & Plasma", ref: "Serum Zinc: 70–120 µg/dL (NABL)", desc: "Allosteric cofactor for Kynurenine Aminotransferase (KAT) and GluN2A NMDA pore blocker.", topo_x: -320, topo_y: -70, anat_x: -315, anat_y: -130, color: "#f0883e" },
+  { id: "mg", label: "Magnesium (Mg²⁺)", organ: "Intracellular & Serum", ref: "Serum Magnesium: 1.8–2.4 mg/dL (NABL)", desc: "Chelates ATP for cellular phosphorylation; voltage-dependent blocker of the NMDA channel.", topo_x: -260, topo_y: 30, anat_x: -315, anat_y: -50, color: "#f0883e" },
+  { id: "se", label: "Selenium (Se)", organ: "Thyroid & Hepatic", ref: "Serum Selenium: 70–150 µg/L (NABL)", desc: "Constituent of Selenocysteine in DIO2 (T4->T3 conversion) and GPX4 antioxidant protection.", topo_x: -330, topo_y: 120, anat_x: -315, anat_y: 30, color: "#f0883e" },
+  { id: "mn", label: "Manganese (Mn²⁺)", organ: "Astrocyte Glial", ref: "Blood Mn: 4.7–18.3 µg/L", desc: "Cofactor for astrocytic Glutamine Synthetase (GS) converting glutamate to glutamine.", topo_x: -240, topo_y: 200, anat_x: 0, anat_y: -80, color: "#58a6ff" },
+
+  // Gut Microbiome & Mucosa
+  { id: "scfa", label: "SCFA (Butyrate)", organ: "Colon Microbiota", ref: "Fecal Butyrate > 15%", desc: "Short-chain fatty acids tightening mucosal barriers and stimulating vagal GLP-1/PYY afferents.", topo_x: -140, topo_y: -220, anat_x: -140, anat_y: 245, color: "#f85149" },
+  { id: "lps", label: "LPS (Endotoxin)", organ: "Gut Barrier / Blood", ref: "Endotoxin < 0.2 EU/mL", desc: "Translocated bacterial lipopolysaccharide triggering systemic TLR4-NFκB cascades.", topo_x: -110, topo_y: -130, anat_x: -50, anat_y: 245, color: "#f85149" },
+  { id: "il6", label: "IL-6 & hs-CRP", organ: "Systemic Circulation", ref: "IL-6 < 5.0 pg/mL; hs-CRP < 1.0 mg/L", desc: "Sterile inflammatory cytokines that cross the BBB and potently induce the IDO1 enzyme.", topo_x: -30, topo_y: -140, anat_x: 40, anat_y: 245, color: "#f85149" },
+  { id: "ido", label: "IDO1 / KMO Shunt", organ: "Gut & Microglia", ref: "Kyn/Trp ratio normal", desc: "Diverts tryptophan away from serotonin synthesis toward neurotoxic quinolinic acid.", topo_x: 70, topo_y: -150, anat_x: 130, anat_y: 245, color: "#f85149" },
+  { id: "qa_ka", label: "QA/KA Neurotoxin Ratio", organ: "CNS Interstitium", ref: "QA/KA < 3.0", desc: "Ratio of Quinolinic Acid (NMDA agonist excitotoxin) to Kynurenic Acid (neuroprotectant).", topo_x: 170, topo_y: -120, anat_x: 130, anat_y: -180, color: "#bc8cff" },
+
+  // Brain & Synapses
+  { id: "trp", label: "Brain Tryptophan", organ: "Blood-Brain Barrier", ref: "Plasma Trp: 40–70 µmol/L", desc: "Essential precursor amino acid transported into the brain via competitive LAT1 transporters.", topo_x: -60, topo_y: -40, anat_x: -130, anat_y: -280, color: "#bc8cff" },
+  { id: "serotonin", label: "5-HT (Serotonin)", organ: "Dorsal Raphe Nuclei", ref: "Serum 5-HT: 50–200 ng/mL", desc: "Primary emotional stability and resilience monoamine; requires Iron, B12, and BH4 cofactors.", topo_x: 50, topo_y: -40, anat_x: -45, anat_y: -280, color: "#bc8cff" },
+  { id: "dopamine", label: "Dopamine (DA)", organ: "VTA & Substantia Nigra", ref: "CSF HVA normal", desc: "Striatal reward valuation, motivation, and motor vigor; requires Iron-dependent Tyrosine Hydroxylase.", topo_x: 60, topo_y: 50, anat_x: 45, anat_y: -280, color: "#bc8cff" },
+  { id: "bdnf", label: "BDNF (Neuroplasticity)", organ: "Hippocampus", ref: "Serum BDNF > 20 ng/mL", desc: "Drives dendritic arborization, synaptic plasticity, and escape from depressive states.", topo_x: 150, topo_y: 60, anat_x: 130, anat_y: -280, color: "#bc8cff" },
+  { id: "eaat2", label: "Astrocyte EAAT2", organ: "Synaptic Glia", ref: ">90% glutamate clearance", desc: "High-affinity astrocytic glutamate transporter; lost under inflammatory QA or oxidative stress.", topo_x: 160, topo_y: -30, anat_x: -45, anat_y: -180, color: "#bc8cff" },
+  { id: "glu_spill", label: "Glutamate Excitotoxicity", organ: "Extrasynaptic Space", ref: "Basal glutamate < 2 µmol/L", desc: "Excess extrasynaptic glutamate stimulating GluN2B NMDA receptors and driving dendritic injury.", topo_x: 260, topo_y: -40, anat_x: 45, anat_y: -180, color: "#f85149" },
+
+  // Autonomic & Vagal
+  { id: "vagus", label: "Vagus Nerve / HRV", organ: "Cardiovascular Autonomic", ref: "HRV RMSSD: 35–70 ms", desc: "Parasympathetic cholinergic anti-inflammatory pathway inhibiting splenic cytokine release.", topo_x: -160, topo_y: 10, anat_x: -50, anat_y: 20, color: "#3fb950" },
+  { id: "dnic", label: "Descending Pain Gate", organ: "Brainstem PAG-RVM", ref: "Normal CPM conditioning", desc: "Diffuse Noxious Inhibitory Controls; monoaminergic descending inhibition of spinal pain signals.", topo_x: -70, topo_y: 220, anat_x: 50, anat_y: 20, color: "#3fb950" },
+
+  // Liver & Cellular Bioenergetics
+  { id: "atp", label: "Mitochondrial ATP", organ: "Cellular Mitochondria", ref: "ATP/ADP ratio normal", desc: "Bioenergetic currency synthesized by Complexes I-IV; relies on Iron-Sulfur clusters.", topo_x: 180, topo_y: -220, anat_x: -50, anat_y: 125, color: "#d29922" },
+  { id: "insulin_res", label: "Insulin Resistance (HOMA-IR)", organ: "Liver & Muscle", ref: "HOMA-IR < 1.5; FBS: 70–99 mg/dL", desc: "South Asian metabolic phenotype: blocks glucose clearance and starves high-energy neuroglia.", topo_x: 130, topo_y: -300, anat_x: 50, anat_y: 125, color: "#d29922" },
+
+  // Clinical Syndrome & Allostatic Basin
+  { id: "pain", label: "Somatic Body Pain", organ: "Periphery & Somatosensory", ref: "Visual Analog Scale 0-10", desc: "Amplified somatic pain from combined peripheral sensitization and descending gating failure.", topo_x: 30, topo_y: 230, anat_x: 315, anat_y: 0, color: "#f778ba" },
+  { id: "load", label: "Allostatic Load (L)", organ: "Whole-Body Tissue Wear", ref: "Allostatic Index < 3", desc: "Irreversible biological strain accumulated from chronic oxidative, inflammatory, and energetic stress.", topo_x: 260, topo_y: 70, anat_x: 315, anat_y: 90, color: "#f85149" },
+  { id: "barrier", label: "Barrier Rigidity (λ·L)", organ: "Neurodynamic Bifurcation", ref: "Potential Barrier", desc: "Elevates the hysteresis barrier preventing spontaneous spontaneous recovery from depression.", topo_x: 340, topo_y: 140, anat_x: 315, anat_y: 175, color: "#f778ba" },
+  { id: "mood", label: "Clinical Mood State (m)", organ: "Prefrontal-Limbic Circuit", ref: "Euthymia (+1.0)", desc: "Depressive Basin (-1.0) vs. Resilient Attractor (+1.0). Inverted by multi-target therapy.", topo_x: 290, topo_y: 220, anat_x: 315, anat_y: 260, color: "#58a6ff" }
+];
+
+const EDGES = [
+  { from: "fe", to: "serotonin", type: "pos", label: "TPH2 synthesis" },
+  { from: "fe", to: "dopamine", type: "pos", label: "TH synthesis" },
+  { from: "fe", to: "atp", type: "pos", label: "Complex I-IV" },
+  { from: "b12", to: "serotonin", type: "pos", label: "SAMe/BH4 pathway" },
+  { from: "b12", to: "dopamine", type: "pos", label: "Methylation support" },
+  { from: "zn", to: "qa_ka", type: "neg", label: "KAT co-activator" },
+  { from: "scfa", to: "lps", type: "neg", label: "Tight junctions" },
+  { from: "scfa", to: "vagus", type: "pos", label: "Vagal afferent" },
+  { from: "lps", to: "il6", type: "pos", label: "TLR4 activation" },
+  { from: "il6", to: "ido", type: "pos", label: "IDO1 induction" },
+  { from: "ido", to: "qa_ka", type: "pos", label: "Kynurenine shunt" },
+  { from: "ido", to: "serotonin", type: "neg", label: "Tryptophan steal" },
+  { from: "qa_ka", to: "eaat2", type: "neg", label: "Glial destruction" },
+  { from: "eaat2", to: "glu_spill", type: "neg", label: "Synaptic clearance" },
+  { from: "glu_spill", to: "load", type: "pos", label: "Excitotoxic strain" },
+  { from: "vagus", to: "il6", type: "neg", label: "α7 nAChR reflex" },
+  { from: "vagus", to: "dnic", type: "pos", label: "Descending gating" },
+  { from: "dnic", to: "pain", type: "neg", label: "Pain inhibition" },
+  { from: "load", to: "barrier", type: "pos", label: "Barrier lock" },
+  { from: "barrier", to: "mood", type: "neg", label: "Recovery block" },
+  { from: "qa_ka", to: "mood", type: "neg", label: "Neurotoxic drive" },
+  { from: "serotonin", to: "mood", type: "pos", label: "Resilience drive" },
+  { from: "dopamine", to: "mood", type: "pos", label: "Reward vigor" },
+  { from: "atp", to: "eaat2", type: "pos", label: "Na+/K+ pump" }
+];
+
+// CLINICAL CASCADES DATA FOR DOCTORS
+const CLINICAL_CASCADES = {
+  fe_deficiency: {
+    title: "Iron (Fe²⁺) Deficiency Cascade",
+    trigger: "Low dietary iron, malabsorption (Celiac/IBD), or occult bleeding → Ferritin drops < 30 ng/mL",
+    highlightNodes: ["fe", "serotonin", "dopamine", "atp", "eaat2", "load", "mood"],
+    steps: [
+      {
+        num: "1",
+        organ: "🩸 Blood & Bone Marrow",
+        action: "Iron Stores Depleted",
+        detail: "Serum ferritin drops. Iron is withheld from non-erythroid tissues to prioritize hemoglobin production."
+      },
+      {
+        num: "2",
+        organ: "🧠 Brainstem & Basal Ganglia",
+        action: "Rate-Limiting Enzyme Arrest",
+        detail: "Tryptophan Hydroxylase 2 (TPH2) and Tyrosine Hydroxylase (TH) lack essential Fe²⁺ cofactors. De novo synthesis of Serotonin (5-HT) and Dopamine (DA) plummets by >60%."
+      },
+      {
+        num: "3",
+        organ: "🥩 Cellular Mitochondria",
+        action: "Electron Transport Chain Failure",
+        detail: "Iron-sulfur clusters in Complexes I-IV fail. ATP production collapses, starving high-energy astrocytic Na⁺/K⁺ pumps that power EAAT2 glutamate clearance."
+      },
+      {
+        num: "4",
+        organ: "🏥 Clinical Symptoms Manifest",
+        action: "Profound Anhedonia & Fatigue",
+        detail: "Patient presents with severe loss of motivation (low DA), emotional fragility (low 5-HT), cognitive brain fog, and chronic physical exhaustion."
+      }
+    ],
+    pearl: {
+      title: "Why Standard SSRIs Fail in Iron-Deficient Depression:",
+      text: "SSRIs (e.g. Sertraline) act solely as Serotonin Transporter (SERT) reuptake blockers. In iron deficiency, the rate-limiting enzyme TPH2 cannot synthesize serotonin. Inhibiting reuptake of an empty synapse yields zero benefit and causes treatment-resistant depression. **Clinical Action**: Replenish iron stores (target Ferritin > 50-75 ng/mL via Ferrous Bisglycinate or IV Iron) to restore monoamine synthesis capacity before or alongside SSRI pharmacotherapy."
+    }
+  },
+  leaky_gut: {
+    title: "Leaky Gut & Systemic Endotoxemia Cascade",
+    trigger: "Microbiome dysbiosis → mucosal barrier breakdown → LPS endotoxin enters portal & systemic blood",
+    highlightNodes: ["lps", "il6", "ido", "qa_ka", "eaat2", "glu_spill", "load", "mood"],
+    steps: [
+      {
+        num: "1",
+        organ: "🦠 Gut Mucosal Barrier",
+        action: "Bacterial LPS Translocation",
+        detail: "Loss of butyrate-producing commensals loosens claudin tight junctions. Endotoxin (LPS) leaks into portal and systemic circulation."
+      },
+      {
+        num: "2",
+        organ: "🩸 Systemic Immune System",
+        action: "TLR4-NFκB Cytokine Storm",
+        detail: "LPS binds circulating macrophage TLR4, driving massive secretion of inflammatory IL-6 and TNF-α, which cross the Blood-Brain Barrier."
+      },
+      {
+        num: "3",
+        organ: "🧠 Microglia & Astrocytes",
+        action: "The IDO1 'Tryptophan Steal'",
+        detail: "Central IL-6 potently induces Indoleamine 2,3-dioxygenase (IDO1). Tryptophan is shunted away from serotonin synthesis directly into neurotoxic Quinolinic Acid (QA)."
+      },
+      {
+        num: "4",
+        organ: "🏥 Excitotoxic Damage & Depression",
+        action: "Astrocytic EAAT2 Destruction",
+        detail: "Quinolinic acid destroys astrocytic EAAT2 transporters. Glutamate spills extrasynaptically, damaging synapses and locking the mood landscape into severe depression."
+      }
+    ],
+    pearl: {
+      title: "Clinical Pearl: Inflammatory 'Sickness Behavior' vs. Primary Mood Disorder",
+      text: "Patients with elevated hs-CRP/IL-6 display severe psychomotor slowing, hyperalgesia, and social withdrawal. Standard monoamine agonists fail because inflammation degrades astrocytic glutamate clearance. **Clinical Action**: Combine gut barrier repair (zinc carnosine, butyrate) with anti-inflammatory strategies and NMDA antagonists (e.g., Ketamine) to halt excitotoxic damage."
+    }
+  },
+  zn_deficiency: {
+    title: "Zinc Deficiency & Excitotoxicity Cascade",
+    trigger: "Inadequate dietary intake or phytic acid chelation → Plasma Zn drops < 70 μg/dL",
+    highlightNodes: ["zn", "qa_ka", "eaat2", "glu_spill", "load"],
+    steps: [
+      {
+        num: "1",
+        organ: "🩸 Systemic Circulation",
+        action: "Depleted Labile Zinc Pool",
+        detail: "Zinc availability drops in synaptic vesicles and systemic enzymatic cofactor pools."
+      },
+      {
+        num: "2",
+        organ: "🧠 Kynurenine Pathway",
+        action: "KAT Enzyme Inactivation",
+        detail: "Kynurenine Aminotransferase (KAT) requires Zinc. KAT halts, preventing conversion of kynurenine into neuroprotective Kynurenic Acid (KA)."
+      },
+      {
+        num: "3",
+        organ: "🧠 Synaptic Cleft",
+        action: "Loss of NMDA GluN2A Inhibition",
+        detail: "Zinc is the endogenous high-affinity allosteric blocker of NMDA GluN2A receptors. Without it, NMDA channels remain unblocked and hyper-excitable."
+      },
+      {
+        num: "4",
+        organ: "🏥 Excitotoxic Neurodegeneration",
+        action: "Unchecked Intracellular Calcium Influx",
+        detail: "Combined high QA/KA ratio and unblocked NMDA receptors cause catastrophic Ca²⁺ influx and dendritic spine retraction."
+      }
+    ],
+    pearl: {
+      title: "Clinical Pearl: Zinc as an Adjunctive Antidepressant",
+      text: "Multiple clinical trials confirm that 25-50 mg elemental zinc supplementation accelerates SSRI response times by shielding synapses from NMDA-mediated excitotoxicity."
+    }
+  },
+  se_deficiency: {
+    title: "Selenium Deficiency & Cerebral Hypothyroidism",
+    trigger: "Low soil selenium or malabsorption → Serum Se drops < 70 μg/L",
+    highlightNodes: ["se", "atp", "load", "mood"],
+    steps: [
+      {
+        num: "1",
+        organ: "🗣️ Thyroid & Astrocytes",
+        action: "DIO2 Deiodinase Arrest",
+        detail: "Type 2 Iodothyronine Deiodinase (DIO2) is a selenoprotein. Without Selenium, conversion of T4 into active T3 in astrocytic endfeet drops by >50%."
+      },
+      {
+        num: "2",
+        organ: "🧠 Central Nervous System",
+        action: "Local Brain Hypothyroidism",
+        detail: "Serum TSH and Free T4 appear deceptively normal on standard blood tests, but cerebral intracellular T3 levels are deficient."
+      },
+      {
+        num: "3",
+        organ: "🏥 Patient Symptoms",
+        action: "Intractable Brain Fog & Slowing",
+        detail: "Patient experiences severe mental lethargy, cold intolerance, cognitive slowing, and blunted affect that fails SSRI monotherapy."
+      }
+    ],
+    pearl: {
+      title: "Clinical Pearl: The 'Normal TSH' Deception",
+      text: "Systemic thyroid tests frequently miss central deiodinase failure. Evaluating Selenium and Selenium repletion (100-200 μg selenomethionine) restores astrocytic T3 conversion."
+    }
+  },
+  vagus_collapse: {
+    title: "Autonomic Vagal Collapse & Pain Amplification",
+    trigger: "Chronic psychological distress or sleep deprivation → Vagal parasympathetic tone collapses (Low HRV)",
+    highlightNodes: ["vagus", "il6", "dnic", "pain", "load"],
+    steps: [
+      {
+        num: "1",
+        organ: "🫀 Autonomic Nervous System",
+        action: "Loss of Parasympathetic Heart Rate Variability",
+        detail: "Vagal efferent firing drops, measurable as suppressed RMSSD on electrocardiogram / pulse plethysmography."
+      },
+      {
+        num: "2",
+        organ: "🛡️ Spleen & Immune Axis",
+        action: "Failure of the Cholinergic Anti-Inflammatory Reflex",
+        detail: "The vagal α7-nicotinic acetylcholine pathway ceases to suppress splenic macrophage TNF-α release, leading to uninhibited systemic inflammation."
+      },
+      {
+        num: "3",
+        organ: "🧠 Brainstem PAG-RVM",
+        action: "Spinal Pain Gate Flings Open",
+        detail: "Descending Diffuse Noxious Inhibitory Controls (DNIC) fail. Ascending C-fiber nociceptive signals reach the cortex unchecked, creating diffuse somatic body pain and fibromyalgia."
+      }
+    ],
+    pearl: {
+      title: "Clinical Pearl: Non-Invasive Vagus Nerve Stimulation (nVNS)",
+      text: "Restoring vagal afferent tone via transcutaneous auricular VNS or paced 0.1 Hz resonant breathing closes the spinal pain gate and silences peripheral cytokine secretion."
+    }
+  },
+  insulin_resistance: {
+    title: "Insulin Resistance & Bioenergetic Starvation",
+    trigger: "Hypercaloric diet, metabolic syndrome, or visceral adiposity → HOMA-IR > 2.5",
+    highlightNodes: ["insulin_res", "atp", "eaat2", "load", "mood"],
+    steps: [
+      {
+        num: "1",
+        organ: "🥩 Liver & Peripheral Muscle",
+        action: "Receptor Desensitization",
+        detail: "Insulin receptor substrate phosphorylation fails, causing hyperinsulinemia and impaired glucose disposal."
+      },
+      {
+        num: "2",
+        organ: "🧠 Blood-Brain Barrier & Glia",
+        action: "Cerebral Glucose Hypometabolism",
+        detail: "Neuronal GLUT4 and astrocytic glucose transport become impaired ('Type 3 Diabetes'), starving neurons of ATP."
+      },
+      {
+        num: "3",
+        organ: "🏥 Clinical Outcome",
+        action: "Chronic Exhaustion & Mood Drop",
+        detail: "Without ATP, astrocytes cannot clear synaptic glutamate, leading to chronic excitotoxicity and depressive collapse."
+      }
+    ],
+    pearl: {
+      title: "Clinical Pearl: Ketone Bodies Bypass Insulin Resistance",
+      text: "Beta-hydroxybutyrate (BHB) enters neuronal mitochondria via monocarboxylate transporters (MCT1/2), entirely bypassing insulin-dependent GLUT pathways to restore ATP production."
+    }
+  }
+};
+
+// Canvas & Interaction
+const canvas = document.getElementById("graph-canvas");
+const ctx = canvas.getContext("2d");
+let width, height;
+let transform = { x: 0, y: 0, scale: 0.90 };
+let isDragging = false, startX, startY;
+let selectedNode = null, hoveredNode = null;
+
+function resizeCanvas() {
+  const container = document.getElementById("canvas-container");
+  if (!container) return;
+  width = canvas.width = container.clientWidth;
+  height = canvas.height = container.clientHeight;
+  if (transform.x === 0 && transform.y === 0) {
+    transform.x = width / 2;
+    transform.y = height / 2 + 10;
+  }
+  render();
+}
+window.addEventListener("resize", resizeCanvas);
+
+function getNodeCoords(node) {
+  if (currentLayout === "anatomy") {
+    return { x: node.anat_x, y: node.anat_y };
+  }
+  return { x: node.topo_x, y: node.topo_y };
+}
+
+function render() {
+  if (!ctx) return;
+  ctx.save();
+  ctx.clearRect(0, 0, width, height);
+  ctx.translate(transform.x, transform.y);
+  ctx.scale(transform.scale, transform.scale);
+
+  const cascadeData = CLINICAL_CASCADES[activeCascadeKey];
+  const highlighted = cascadeData ? cascadeData.highlightNodes : [];
+
+  // Draw Anatomical Organ Zones in Anatomy Mode
+  if (currentLayout === "anatomy") {
+    ORGAN_ZONES.forEach(zone => {
+      ctx.fillStyle = zone.color;
+      ctx.strokeStyle = zone.border;
+      ctx.lineWidth = 1.0;
+      ctx.setLineDash([4, 4]);
+
+      // Rounded rectangle
+      const r = 8;
+      ctx.beginPath();
+      ctx.moveTo(zone.x + r, zone.y);
+      ctx.lineTo(zone.x + zone.w - r, zone.y);
+      ctx.quadraticCurveTo(zone.x + zone.w, zone.y, zone.x + zone.w, zone.y + r);
+      ctx.lineTo(zone.x + zone.w, zone.y + zone.h - r);
+      ctx.quadraticCurveTo(zone.x + zone.w, zone.y + zone.h, zone.x + zone.w - r, zone.y + zone.h);
+      ctx.lineTo(zone.x + r, zone.y + zone.h);
+      ctx.quadraticCurveTo(zone.x, zone.y + zone.h, zone.x, zone.y + zone.h - r);
+      ctx.lineTo(zone.x, zone.y + r);
+      ctx.quadraticCurveTo(zone.x, zone.y, zone.x + r, zone.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Zone Label
+      ctx.font = "bold 9px -apple-system, sans-serif";
+      ctx.fillStyle = zone.border;
+      ctx.textAlign = "left";
+      ctx.fillText(zone.name, zone.x + 8, zone.y + 14);
+    });
+  }
+
+  // Draw Edges
+  pulsePhase = (pulsePhase + 0.05) % (Math.PI * 2);
+  EDGES.forEach(edge => {
+    const src = NODES.find(n => n.id === edge.from);
+    const dst = NODES.find(n => n.id === edge.to);
+    if (!src || !dst) return;
+
+    const p1 = getNodeCoords(src);
+    const p2 = getNodeCoords(dst);
+
+    const isCascadeEdge = highlighted.includes(src.id) && highlighted.includes(dst.id);
+
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const cx = (p1.x + p2.x) / 2 - dy * 0.12;
+    const cy = (p1.y + p2.y) / 2 + dx * 0.12;
+    ctx.quadraticCurveTo(cx, cy, p2.x, p2.y);
+
+    if (isCascadeEdge) {
+      ctx.lineWidth = 2.8;
+      ctx.strokeStyle = "#f0883e";
+      ctx.shadowColor = "#f0883e";
+      ctx.shadowBlur = 8;
+    } else {
+      ctx.lineWidth = 1.0;
+      ctx.strokeStyle = edge.type === "pos" ? "rgba(63, 185, 80, 0.35)" : "rgba(248, 81, 73, 0.35)";
+      ctx.shadowBlur = 0;
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  });
+
+  // Draw Nodes
+  NODES.forEach(node => {
+    const p = getNodeCoords(node);
+    const isHighlighted = highlighted.includes(node.id);
+    const isSelected = selectedNode && selectedNode.id === node.id;
+
+    ctx.beginPath();
+    const radius = isHighlighted ? 15 : 12;
+    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = node.color || "#58a6ff";
+    ctx.fill();
+
+    ctx.lineWidth = isSelected ? 3 : (isHighlighted ? 2.5 : 1.5);
+    ctx.strokeStyle = isSelected ? "#ffffff" : (isHighlighted ? "#f0883e" : "rgba(255,255,255,0.7)");
+    if (isHighlighted) {
+      ctx.shadowColor = "#f0883e";
+      ctx.shadowBlur = 10;
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Node text
+    ctx.font = isHighlighted ? "bold 10px sans-serif" : "9px sans-serif";
+    ctx.fillStyle = isHighlighted ? "#ffffff" : "#c9d1d9";
+    ctx.textAlign = "center";
+    ctx.fillText(node.label, p.x, p.y + radius + 11);
+  });
+
+  ctx.restore();
+}
+
+// Update Clinical Cascade Panel in Sidebar
+function updateCascadeSidebar() {
+  const cascade = CLINICAL_CASCADES[activeCascadeKey];
+  const container = document.getElementById("cascade-content");
+  if (!cascade) {
+    container.innerHTML = `<p style="font-size:0.75rem; color:var(--text-secondary);">Select a clinical scenario from the top dropdown to see the organ-by-organ cascade.</p>`;
+    return;
+  }
+
+  let html = `<div style="font-size:0.8rem; font-weight:700; color:#f0883e; margin-bottom:4px;">${cascade.title}</div>`;
+  html += `<p style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:10px;"><strong>Etiology:</strong> ${cascade.trigger}</p>`;
+
+  cascade.steps.forEach(step => {
+    html += `
+      <div class="cascade-step">
+        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+          <strong style="color:#58a6ff;">Step ${step.num}: ${step.action}</strong>
+          <span style="color:#8b949e; font-size:0.68rem;">${step.organ}</span>
+        </div>
+        <p>${step.detail}</p>
+      </div>
+    `;
+  });
+
+  html += `
+    <div class="clinical-pearl-box">
+      <strong>🩺 ${cascade.pearl.title}</strong>
+      <p>${cascade.pearl.text}</p>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+// Node Inspector Click Handler
+function updateNodeInspector(node) {
+  const container = document.getElementById("node-inspector");
+  if (!node) {
+    container.innerHTML = `<p style="font-size:0.75rem; color:var(--text-secondary);">Click any organ or biomarker node on the body diagram to inspect normal lab reference ranges, pathophysiological role, and clinical management.</p>`;
+    return;
+  }
+
+  let html = `
+    <div style="background:var(--bg-card); padding:10px; border-radius:6px; border:1px solid var(--border);">
+      <div style="font-size:0.85rem; font-weight:700; color:#58a6ff; margin-bottom:2px;">${node.label}</div>
+      <div style="font-size:0.72rem; color:#8b949e; margin-bottom:8px;">Organ System: <strong style="color:#c9d1d9;">${node.organ}</strong></div>
+      
+      <div style="background:rgba(63,185,80,0.1); border:1px solid rgba(63,185,80,0.3); padding:6px 8px; border-radius:4px; font-size:0.72rem; color:#3fb950; margin-bottom:8px;">
+        <strong>Clinical Lab Reference Range:</strong><br>${node.ref}
+      </div>
+
+      <div style="font-size:0.75rem; color:#c9d1d9; line-height:1.35; margin-bottom:8px;">
+        <strong>Pathophysiological Mechanism:</strong><br>${node.desc}
+      </div>
+    </div>
+  `;
+  container.innerHTML = html;
+}
+
+// View Mode Toggle
+document.getElementById("btn-mode-anatomy").addEventListener("click", () => {
+  currentLayout = "anatomy";
+  document.getElementById("btn-mode-anatomy").classList.add("active");
+  document.getElementById("btn-mode-topology").classList.remove("active");
+  render();
+});
+
+document.getElementById("btn-mode-topology").addEventListener("click", () => {
+  currentLayout = "topology";
+  document.getElementById("btn-mode-topology").classList.add("active");
+  document.getElementById("btn-mode-anatomy").classList.remove("active");
+  render();
+});
+
+// Cascade Dropdown
+document.getElementById("select-clinical-cascade").addEventListener("change", (e) => {
+  activeCascadeKey = e.target.value;
+  updateCascadeSidebar();
+  render();
+});
+
+// Canvas Interaction (Pan, Zoom, Click)
+canvas.addEventListener("mousedown", e => {
+  isDragging = true;
+  startX = e.clientX - transform.x;
+  startY = e.clientY - transform.y;
+});
+
+canvas.addEventListener("mousemove", e => {
+  if (isDragging) {
+    transform.x = e.clientX - startX;
+    transform.y = e.clientY - startY;
+    render();
+    return;
+  }
+
+  // Hover detection
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left - transform.x) / transform.scale;
+  const my = (e.clientY - rect.top - transform.y) / transform.scale;
+
+  hoveredNode = NODES.find(n => {
+    const p = getNodeCoords(n);
+    const d = Math.hypot(p.x - mx, p.y - my);
+    return d <= 15;
+  });
+
+  const tip = document.getElementById("tooltip");
+  if (hoveredNode) {
+    tip.style.display = "block";
+    tip.style.left = (e.clientX + 14) + "px";
+    tip.style.top = (e.clientY + 14) + "px";
+    tip.innerHTML = `<strong>${hoveredNode.label}</strong><small>${hoveredNode.organ}</small><small style="color:#3fb950;">${hoveredNode.ref}</small>`;
+  } else {
+    tip.style.display = "none";
+  }
+});
+
+canvas.addEventListener("mouseup", e => {
+  if (!isDragging) return;
+  isDragging = false;
+
+  // Click detection
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left - transform.x) / transform.scale;
+  const my = (e.clientY - rect.top - transform.y) / transform.scale;
+
+  const clicked = NODES.find(n => {
+    const p = getNodeCoords(n);
+    return Math.hypot(p.x - mx, p.y - my) <= 18;
+  });
+
+  if (clicked) {
+    selectedNode = clicked;
+    updateNodeInspector(clicked);
+    render();
+  }
+});
+
+canvas.addEventListener("wheel", e => {
+  e.preventDefault();
+  const zoom = e.deltaY < 0 ? 1.08 : 0.92;
+  transform.scale = Math.max(0.4, Math.min(2.5, transform.scale * zoom));
+  render();
+}, { passive: false });
+
+// --- Tab 2: Virtual Patient Simulator & Physician Workstation ---
+const biotypePresets = {
+  indian_veg_anhedonia: {
+    ferritin: 14, b12: 140, vitd: 16, zinc: 52, selenium: 65, magnesium: 1.7, fbs: 108, insulin: 18.5, tsh: 3.8, dex: 3.2, hscrp: 3.4, il6: 4.5, rmssd: 22, lps: 0.60, social: 0.40, initialm: -0.85,
+    intervention: "repletion"
+  },
+  south_asian_metabolic: {
+    ferritin: 60, b12: 320, vitd: 18, zinc: 72, selenium: 80, magnesium: 1.5, fbs: 132, insulin: 22.0, tsh: 3.2, dex: 1.4, hscrp: 4.8, il6: 4.2, rmssd: 24, lps: 0.45, social: 0.60, initialm: -0.80,
+    intervention: "ketogenic"
+  },
+  inflammatory_kynurenine: {
+    ferritin: 95, b12: 290, vitd: 22, zinc: 48, selenium: 55, magnesium: 1.6, fbs: 102, insulin: 11.0, tsh: 2.9, dex: 1.5, hscrp: 5.6, il6: 8.5, rmssd: 18, lps: 1.20, social: 0.50, initialm: -0.90,
+    intervention: "rtms"
+  },
+  melancholic_hpa_failure: {
+    ferritin: 45, b12: 250, vitd: 15, zinc: 65, selenium: 85, magnesium: 1.8, fbs: 112, insulin: 13.0, tsh: 4.2, dex: 4.2, hscrp: 3.6, il6: 5.2, rmssd: 14, lps: 0.70, social: 0.15, initialm: -0.95,
+    intervention: "full_stack"
+  },
+  euthymic_healthy: {
+    ferritin: 85, b12: 550, vitd: 45, zinc: 98, selenium: 115, magnesium: 2.2, fbs: 85, insulin: 5.5, tsh: 1.8, dex: 0.8, hscrp: 0.6, il6: 0.8, rmssd: 55, lps: 0.05, social: 0.85, initialm: 0.65,
+    intervention: "none"
+  },
+  // Backwards compatibility aliases
+  anhedonic_iron: {
+    ferritin: 14, b12: 140, vitd: 16, zinc: 52, selenium: 65, magnesium: 1.7, fbs: 108, insulin: 18.5, tsh: 3.8, dex: 3.2, hscrp: 3.4, il6: 4.5, rmssd: 22, lps: 0.60, social: 0.40, initialm: -0.85,
+    intervention: "repletion"
+  },
+  metabolic_glial: {
+    ferritin: 60, b12: 320, vitd: 18, zinc: 72, selenium: 80, magnesium: 1.5, fbs: 132, insulin: 22.0, tsh: 3.2, dex: 1.4, hscrp: 4.8, il6: 4.2, rmssd: 24, lps: 0.45, social: 0.60, initialm: -0.80,
+    intervention: "ketogenic"
+  },
+  psychosocial_defeat: {
+    ferritin: 45, b12: 250, vitd: 15, zinc: 65, selenium: 85, magnesium: 1.8, fbs: 112, insulin: 13.0, tsh: 4.2, dex: 4.2, hscrp: 3.6, il6: 5.2, rmssd: 14, lps: 0.70, social: 0.15, initialm: -0.95,
+    intervention: "full_stack"
+  }
+};
+
+const sliderDefs = [
+  { id: "ferritin", unit: " ng/mL", dec: 0 },
+  { id: "b12", unit: " pg/mL", dec: 0 },
+  { id: "vitd", unit: " ng/mL", dec: 0 },
+  { id: "zinc", unit: " µg/dL", dec: 0 },
+  { id: "selenium", unit: " µg/L", dec: 0 },
+  { id: "magnesium", unit: " mg/dL", dec: 2 },
+  { id: "fbs", unit: " mg/dL", dec: 0 },
+  { id: "insulin", unit: " µIU/mL", dec: 1 },
+  { id: "tsh", unit: " µIU/mL", dec: 1 },
+  { id: "dex", unit: " µg/dL", dec: 1 },
+  { id: "hscrp", unit: " mg/L", dec: 1 },
+  { id: "il6", unit: " pg/mL", dec: 1 },
+  { id: "rmssd", unit: " ms", dec: 0 },
+  { id: "lps", unit: " EU/mL", dec: 2 },
+  { id: "social", unit: "", dec: 2 },
+  { id: "initialm", unit: "", dec: 2 }
+];
+
+function updateSliderDisplays() {
+  sliderDefs.forEach(def => {
+    const sl = document.getElementById("slider-" + def.id);
+    const disp = document.getElementById("val-disp-" + def.id);
+    if (sl && disp) {
+      disp.innerText = parseFloat(sl.value).toFixed(def.dec) + def.unit;
+    }
+  });
+
+  // Dynamic Indian Lab Badge Computation
+  // Ferritin (ng/mL)
+  const ferr = parseFloat(document.getElementById("slider-ferritin")?.value || 0);
+  const bFerr = document.getElementById("badge-ferritin");
+  if (bFerr) {
+    if (ferr < 30) { bFerr.className = "badge-tag badge-def"; bFerr.innerText = "CRITICAL DEFICIENT"; }
+    else if (ferr < 50) { bFerr.className = "badge-tag badge-low"; bFerr.innerText = "BORDERLINE LOW"; }
+    else { bFerr.className = "badge-tag badge-norm"; bFerr.innerText = "NORMAL"; }
+  }
+
+  // Vitamin B12 (pg/mL)
+  const b12 = parseFloat(document.getElementById("slider-b12")?.value || 0);
+  const bB12 = document.getElementById("badge-b12");
+  if (bB12) {
+    if (b12 < 211) { bB12.className = "badge-tag badge-def"; bB12.innerText = "SEVERE DEFICIENT"; }
+    else if (b12 < 300) { bB12.className = "badge-tag badge-low"; bB12.innerText = "BORDERLINE LOW"; }
+    else { bB12.className = "badge-tag badge-norm"; bB12.innerText = "NORMAL"; }
+  }
+
+  // Vitamin D (ng/mL)
+  const vitd = parseFloat(document.getElementById("slider-vitd")?.value || 0);
+  const bVitd = document.getElementById("badge-vitd");
+  if (bVitd) {
+    if (vitd < 20) { bVitd.className = "badge-tag badge-def"; bVitd.innerText = "DEFICIENT"; }
+    else if (vitd < 30) { bVitd.className = "badge-tag badge-low"; bVitd.innerText = "INSUFFICIENT"; }
+    else { bVitd.className = "badge-tag badge-norm"; bVitd.innerText = "NORMAL"; }
+  }
+
+  // Zinc (µg/dL)
+  const zn = parseFloat(document.getElementById("slider-zinc")?.value || 0);
+  const bZn = document.getElementById("badge-zinc");
+  if (bZn) {
+    if (zn < 70) { bZn.className = "badge-tag badge-low"; bZn.innerText = "LOW (KAT ARREST)"; }
+    else { bZn.className = "badge-tag badge-norm"; bZn.innerText = "NORMAL"; }
+  }
+
+  // Selenium (µg/L)
+  const se = parseFloat(document.getElementById("slider-selenium")?.value || 0);
+  const bSe = document.getElementById("badge-selenium");
+  if (bSe) {
+    if (se < 70) { bSe.className = "badge-tag badge-low"; bSe.innerText = "LOW"; }
+    else { bSe.className = "badge-tag badge-norm"; bSe.innerText = "NORMAL"; }
+  }
+
+  // Magnesium (mg/dL)
+  const mg = parseFloat(document.getElementById("slider-magnesium")?.value || 0);
+  const bMg = document.getElementById("badge-magnesium");
+  if (bMg) {
+    if (mg < 1.8) { bMg.className = "badge-tag badge-low"; bMg.innerText = "LOW"; }
+    else { bMg.className = "badge-tag badge-norm"; bMg.innerText = "NORMAL"; }
+  }
+
+  // Fasting Blood Sugar & Insulin -> HOMA-IR
+  const fbs = parseFloat(document.getElementById("slider-fbs")?.value || 0);
+  const ins = parseFloat(document.getElementById("slider-insulin")?.value || 0);
+  const homa = (fbs * ins) / 405.0;
+  const dispHoma = document.getElementById("val-disp-homa");
+  const bHoma = document.getElementById("badge-homa");
+  if (dispHoma) dispHoma.innerText = homa.toFixed(2);
+  if (bHoma) {
+    if (homa > 2.5) { bHoma.className = "badge-tag badge-high"; bHoma.innerText = "INSULIN RESISTANT"; }
+    else if (homa > 1.5) { bHoma.className = "badge-tag badge-low"; bHoma.innerText = "EARLY RESISTANT"; }
+    else { bHoma.className = "badge-tag badge-norm"; bHoma.innerText = "SENSITIVE"; }
+  }
+
+  const bFbs = document.getElementById("badge-fbs");
+  if (bFbs) {
+    if (fbs >= 126) { bFbs.className = "badge-tag badge-high"; bFbs.innerText = "DIABETIC"; }
+    else if (fbs >= 100) { bFbs.className = "badge-tag badge-low"; bFbs.innerText = "PREDIABETIC"; }
+    else { bFbs.className = "badge-tag badge-norm"; bFbs.innerText = "NORMAL"; }
+  }
+
+  // DEX Post-Test (µg/dL)
+  const dex = parseFloat(document.getElementById("slider-dex")?.value || 0);
+  const bDex = document.getElementById("badge-dex");
+  if (bDex) {
+    if (dex >= 1.8) { bDex.className = "badge-tag badge-high"; bDex.innerText = "NON-SUPPRESSOR"; }
+    else { bDex.className = "badge-tag badge-norm"; bDex.innerText = "SUPPRESSED"; }
+  }
+
+  // hs-CRP (mg/L)
+  const crp = parseFloat(document.getElementById("slider-hscrp")?.value || 0);
+  const bCrp = document.getElementById("badge-hscrp");
+  if (bCrp) {
+    if (crp > 3.0) { bCrp.className = "badge-tag badge-high"; bCrp.innerText = "HIGH INFLAMMATION"; }
+    else if (crp >= 1.0) { bCrp.className = "badge-tag badge-low"; bCrp.innerText = "MODERATE RISK"; }
+    else { bCrp.className = "badge-tag badge-norm"; bCrp.innerText = "LOW RISK"; }
+  }
+
+  // IL-6 (pg/mL)
+  const il6 = parseFloat(document.getElementById("slider-il6")?.value || 0);
+  const bIl6 = document.getElementById("badge-il6");
+  if (bIl6) {
+    if (il6 >= 5.0) { bIl6.className = "badge-tag badge-high"; bIl6.innerText = "ELEVATED"; }
+    else { bIl6.className = "badge-tag badge-norm"; bIl6.innerText = "NORMAL"; }
+  }
+
+  // RMSSD (ms)
+  const rmssd = parseFloat(document.getElementById("slider-rmssd")?.value || 0);
+  const bRmssd = document.getElementById("badge-rmssd");
+  if (bRmssd) {
+    if (rmssd < 35) { bRmssd.className = "badge-tag badge-low"; bRmssd.innerText = "VAGAL EXHAUSTION"; }
+    else { bRmssd.className = "badge-tag badge-norm"; bRmssd.innerText = "NORMAL VAGAL"; }
+  }
+
+  // Gut Endotoxin LPS
+  const lps = parseFloat(document.getElementById("slider-lps")?.value || 0);
+  const bLps = document.getElementById("badge-lps");
+  if (bLps) {
+    if (lps >= 0.2) { bLps.className = "badge-tag badge-high"; bLps.innerText = "LEAKY GUT"; }
+    else { bLps.className = "badge-tag badge-norm"; bLps.innerText = "INTACT"; }
+  }
+}
+
+let patientSimDebounce = null;
+function schedulePatientSim() {
+  clearTimeout(patientSimDebounce);
+  patientSimDebounce = setTimeout(runPatientSim, 200);
+}
+
+sliderDefs.forEach(def => {
+  const sl = document.getElementById("slider-" + def.id);
+  if (sl) {
+    sl.addEventListener("input", () => {
+      updateSliderDisplays();
+      schedulePatientSim();
+    });
+  }
+});
+
+function applyPreset(key) {
+  const p = biotypePresets[key];
+  if (!p) return;
+  if (document.getElementById("slider-ferritin")) document.getElementById("slider-ferritin").value = p.ferritin;
+  if (document.getElementById("slider-b12")) document.getElementById("slider-b12").value = p.b12;
+  if (document.getElementById("slider-vitd")) document.getElementById("slider-vitd").value = p.vitd;
+  if (document.getElementById("slider-zinc")) document.getElementById("slider-zinc").value = p.zinc;
+  if (document.getElementById("slider-selenium")) document.getElementById("slider-selenium").value = p.selenium;
+  if (document.getElementById("slider-magnesium")) document.getElementById("slider-magnesium").value = p.magnesium;
+  if (document.getElementById("slider-fbs")) document.getElementById("slider-fbs").value = p.fbs;
+  if (document.getElementById("slider-insulin")) document.getElementById("slider-insulin").value = p.insulin;
+  if (document.getElementById("slider-tsh")) document.getElementById("slider-tsh").value = p.tsh;
+  if (document.getElementById("slider-dex")) document.getElementById("slider-dex").value = p.dex;
+  if (document.getElementById("slider-hscrp")) document.getElementById("slider-hscrp").value = p.hscrp;
+  if (document.getElementById("slider-il6")) document.getElementById("slider-il6").value = p.il6;
+  if (document.getElementById("slider-rmssd")) document.getElementById("slider-rmssd").value = p.rmssd;
+  if (document.getElementById("slider-lps")) document.getElementById("slider-lps").value = p.lps;
+  if (document.getElementById("slider-social")) document.getElementById("slider-social").value = p.social;
+  if (document.getElementById("slider-initialm")) document.getElementById("slider-initialm").value = p.initialm;
+  if (p.intervention && document.getElementById("select-patient-intervention")) {
+    document.getElementById("select-patient-intervention").value = p.intervention;
+  }
+  updateSliderDisplays();
+  runPatientSim();
+}
+
+document.getElementById("select-profile").addEventListener("change", (e) => {
+  applyPreset(e.target.value);
+});
+
+document.getElementById("btn-reset-ranges").addEventListener("click", () => {
+  applyPreset("indian_veg_anhedonia");
+});
+
+document.getElementById("select-patient-intervention").addEventListener("change", () => {
+  runPatientSim();
+});
+
+document.getElementById("btn-run-patient-sim").addEventListener("click", () => {
+  runPatientSim();
+});
+
+document.getElementById("btn-infer-patient").addEventListener("click", async () => {
+  const profile = document.getElementById("select-profile").value;
+  const container = document.getElementById("patient-params-container");
+  container.innerHTML = `<div style="grid-column:1/-1; color:#58a6ff;">Running Bayesian NPE posterior inversion...</div>`;
+  try {
+    const res = await fetch("/api/patient/infer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ profile })
+    });
+    const data = await res.json();
+    let html = "";
+    for (const [k, v] of Object.entries(data.parameters)) {
+      html += `<div class="param-badge"><span>${k}</span><strong>${v.inferred}</strong> <small style="color:#3fb950;">(η=${v.contraction})</small></div>`;
+    }
+    container.innerHTML = html;
+  } catch(e) {
+    container.innerHTML = `<div style="color:#f85149;">Inference error: ${e}</div>`;
+  }
+});
+
+let currentPatientTraj = [];
+const odePatientCanvas = document.getElementById("ode-chart-patient");
+const odePCtx = odePatientCanvas.getContext("2d");
+const chartHoverInfo = document.getElementById("chart-hover-info");
+
+function setMeter(id, score, isPct = false) {
+  const bar = document.getElementById("meter-" + id);
+  const val = document.getElementById("score-" + id);
+  if (!bar || !val) return;
+  const pct = isPct ? Math.min(100, Math.max(0, score)) : Math.min(100, Math.max(0, (score / 10.0) * 100));
+  bar.style.width = pct + "%";
+  val.innerText = isPct ? score.toFixed(1) + "%" : score.toFixed(1) + "/10";
+
+  let col = "#3fb950";
+  if (isPct) {
+    if (score >= 70) col = "#f85149";
+    else if (score >= 40) col = "#d29922";
+  } else {
+    if (score >= 7.0) col = "#f85149";
+    else if (score >= 4.0) col = "#d29922";
+  }
+  bar.style.backgroundColor = col;
+  val.style.color = col;
+}
+
+function setPred(id, valPct) {
+  const el = document.getElementById("pred-" + id);
+  if (!el) return;
+  el.innerText = valPct.toFixed(1) + "%";
+  if (valPct >= 65) el.style.color = "#3fb950";
+  else if (valPct >= 45) el.style.color = "#d29922";
+  else el.style.color = "#f85149";
+}
+
+// Update Doctor's Formal Consultation Sheet & Rx Slip
+function updatePrescriptionView(simData, payload) {
+  const dateEl = document.getElementById("rx-date");
+  if (dateEl) {
+    const today = new Date();
+    dateEl.innerText = today.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  const selProfile = document.getElementById("select-profile");
+  const patProfText = selProfile ? selProfile.options[selProfile.selectedIndex].text : "Indian Patient";
+  const patProfEl = document.getElementById("rx-pat-profile");
+  if (patProfEl) patProfEl.innerText = patProfText.split(":")[1]?.trim() || patProfText;
+
+  // Estimated HAM-D
+  const sinkingPct = simData.symptoms ? simData.symptoms.sinking_risk_pct : 75;
+  const hamdEst = Math.round(10 + (sinkingPct / 100) * 22);
+  const hamdEl = document.getElementById("rx-pat-hamd");
+  if (hamdEl) {
+    let sev = "Mild";
+    if (hamdEst >= 24) sev = "Severe (Melancholic Risk)";
+    else if (hamdEst >= 18) sev = "Moderate-to-Severe";
+    else if (hamdEst >= 14) sev = "Moderate";
+    hamdEl.innerText = `${sev} (Est. HAM-D: ${hamdEst}/52)`;
+  }
+
+  // HOMA-IR & DEX
+  const homaVal = payload.homa_ir;
+  const homaEl = document.getElementById("rx-pat-homa");
+  if (homaEl) {
+    homaEl.innerText = `${homaVal.toFixed(2)} (${homaVal > 2.5 ? 'Insulin Resistant' : (homaVal > 1.5 ? 'Early Resistance' : 'Normal')})`;
+  }
+
+  const dexVal = payload.dex_suppression;
+  const dexEl = document.getElementById("rx-pat-dex");
+  if (dexEl) {
+    dexEl.innerText = dexVal >= 1.8 ? `Non-Suppressor (${dexVal.toFixed(1)} µg/dL, High Relapse Risk)` : `Normal Suppression (${dexVal.toFixed(1)} µg/dL)`;
+  }
+
+  // Alerts
+  const alertsBox = document.getElementById("rx-alerts-container");
+  if (alertsBox && simData.clinical_alerts) {
+    alertsBox.innerHTML = simData.clinical_alerts.map(a => {
+      const isGood = a.includes("✅");
+      return `<div class="alert-box ${isGood ? 'green' : ''}" style="margin-bottom:6px;">${a}</div>`;
+    }).join("");
+  }
+
+  // Diagnostic Orders
+  const labsBox = document.getElementById("rx-lab-orders-list");
+  if (labsBox) {
+    const defaultLabs = [
+      "Complete Blood Count (CBC) with Peripheral Smear (NABL)",
+      "Comprehensive Iron Profile: Serum Ferritin + Serum Iron + TIBC + % Saturation",
+      "Serum Vitamin B12 (Active Cobalamin) & Serum Folate",
+      "25-Hydroxy Vitamin D3 [25-OH D3]",
+      "Fasting Blood Sugar (FBS) & Fasting Serum Insulin (HOMA-IR calculation)",
+      "Thyroid Profile: TSH, Free T3 (FT3), Free T4 (FT4)",
+      "High-Sensitivity C-Reactive Protein (hs-CRP) & IL-6",
+      "Overnight 1mg Dexamethasone Suppression Test (8 AM Cortisol)"
+    ];
+    labsBox.innerHTML = defaultLabs.map(lab => `
+      <div class="rx-lab-item">
+        <input type="checkbox" checked disabled>
+        <span>${lab}</span>
+      </div>
+    `).join("");
+  }
+
+  // Prescriptions Table
+  const rxTableBody = document.getElementById("rx-prescriptions-body");
+  if (rxTableBody && simData.doctor_rx && simData.doctor_rx.prescriptions) {
+    rxTableBody.innerHTML = simData.doctor_rx.prescriptions.map(rx => `
+      <tr>
+        <td><strong>${rx.item}</strong></td>
+        <td>${rx.dose}</td>
+        <td>${rx.duration}</td>
+        <td><small style="color:#4a5568;">${rx.notes}</small></td>
+      </tr>
+    `).join("");
+  }
+
+  // Interventional
+  const interBox = document.getElementById("rx-interventional-content");
+  if (interBox) {
+    let interHtml = `<strong>1. Neuromodulation:</strong> Left DLPFC 10 Hz rTMS Protocol recommended (30 sessions, 120% motor threshold) to upregulate astrocytic EAAT2 glutamate transporters and overcome monoamine synthetic rate-limitations.<br>`;
+    interHtml += `<strong>2. Dietary / Metabolic:</strong> Low-Glycemic South Asian diet. Limit refined carbohydrates; incorporate healthy fats (MCT oil, nuts, seeds) to promote endogenous beta-hydroxybutyrate (BHB) production and bypass astrocytic insulin resistance.<br>`;
+    interHtml += `<strong>3. Circadian Retinal Phototherapy:</strong> 10,000 lux broad-spectrum light exposure for 30 minutes within 1 hour of waking to restore SCN circadian pacemakers and promote slow-wave sleep (SWS) glymphatic brain clearance.`;
+    interBox.innerHTML = interHtml;
+  }
+}
+
+async function runPatientSim() {
+  const fbs = parseFloat(document.getElementById("slider-fbs")?.value || 108);
+  const insulin = parseFloat(document.getElementById("slider-insulin")?.value || 18.5);
+  const homa_ir = (fbs * insulin) / 405.0;
+
+  const payload = {
+    ferritin: parseFloat(document.getElementById("slider-ferritin")?.value || 14),
+    b12: parseFloat(document.getElementById("slider-b12")?.value || 140),
+    vit_d: parseFloat(document.getElementById("slider-vitd")?.value || 16),
+    zinc: parseFloat(document.getElementById("slider-zinc")?.value || 52),
+    selenium: parseFloat(document.getElementById("slider-selenium")?.value || 65),
+    magnesium: parseFloat(document.getElementById("slider-magnesium")?.value || 1.7),
+    fbs: fbs,
+    fasting_insulin: insulin,
+    homa_ir: homa_ir,
+    tsh: parseFloat(document.getElementById("slider-tsh")?.value || 3.8),
+    dex_suppression: parseFloat(document.getElementById("slider-dex")?.value || 3.2),
+    hs_crp: parseFloat(document.getElementById("slider-hscrp")?.value || 3.4),
+    il6: parseFloat(document.getElementById("slider-il6")?.value || 4.5),
+    hrv_rmssd: parseFloat(document.getElementById("slider-rmssd")?.value || 22),
+    lps: parseFloat(document.getElementById("slider-lps")?.value || 0.6),
+    social_support: parseFloat(document.getElementById("slider-social")?.value || 0.4),
+    initial_m: parseFloat(document.getElementById("slider-initialm")?.value || -0.85),
+    intervention: document.getElementById("select-patient-intervention")?.value || "none",
+    steps: 1440
+  };
+
+  try {
+    const res = await fetch("/api/simulate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    currentPatientTraj = data.trajectory || [];
+
+    // Metrics
+    document.getElementById("p-metric-m").innerText = data.final_m.toFixed(3);
+    document.getElementById("p-metric-m").style.color = data.final_m > 0 ? "#3fb950" : "#f85149";
+    document.getElementById("p-metric-L").innerText = data.final_L.toFixed(3);
+    document.getElementById("p-metric-qaka").innerText = data.final_qa_ka.toFixed(3);
+    const b = document.getElementById("p-metric-basin");
+    b.innerText = data.basin_status;
+    b.style.color = data.final_m > 0 ? "#3fb950" : "#f85149";
+
+    const badge = document.getElementById("basin-badge");
+    badge.innerText = data.basin_status;
+    badge.style.color = data.final_m > 0 ? "#3fb950" : "#f85149";
+    badge.style.background = data.final_m > 0 ? "rgba(63, 185, 80, 0.2)" : "rgba(248, 81, 73, 0.2)";
+
+    // Symptoms
+    if (data.symptoms) {
+      setMeter("anhedonia", data.symptoms.anhedonia);
+      setMeter("fatigue", data.symptoms.fatigue);
+      setMeter("fog", data.symptoms.brain_fog);
+      setMeter("pain", data.symptoms.somatic_pain);
+      setMeter("sleep", data.symptoms.sleep_disruption);
+      setMeter("sinking", data.symptoms.sinking_risk_pct, true);
+    }
+
+    // Treatment Predictions
+    if (data.treatment_predictions) {
+      setPred("ssri", data.treatment_predictions.ssri_pct);
+      setPred("rtms", data.treatment_predictions.rtms_pct);
+      setPred("ketamine", data.treatment_predictions.ketamine_pct);
+      setPred("trace", data.treatment_predictions.trace_repletion_pct);
+    }
+
+    // Directives
+    const alertsContainer = document.getElementById("clinical-alerts-list");
+    if (data.clinical_alerts && data.clinical_alerts.length > 0) {
+      alertsContainer.innerHTML = data.clinical_alerts.map(a => {
+        const isGood = a.includes("✅");
+        return `<div class="alert-box ${isGood ? 'green' : ''}">${a}</div>`;
+      }).join("");
+    } else {
+      alertsContainer.innerHTML = `<div class="alert-box green">Biomarkers stabilized within normal homeostatic limits.</div>`;
+    }
+
+    drawPatientTrajectory();
+    updatePrescriptionView(data, payload);
+  } catch(e) {
+    console.error("Simulation error:", e);
+  }
+}
+
+function drawPatientTrajectory(hoverIdx = -1) {
+  if (!odePatientCanvas || !currentPatientTraj || currentPatientTraj.length === 0) return;
+  const w = odePatientCanvas.width = odePatientCanvas.clientWidth;
+  const h = odePatientCanvas.height = odePatientCanvas.clientHeight;
+  odePCtx.clearRect(0, 0, w, h);
+
+  // Background Grid Lines
+  odePCtx.strokeStyle = "rgba(48, 54, 61, 0.5)";
+  odePCtx.lineWidth = 1;
+  const gridHours = [0, 12, 24, 36, 48, 60, 72];
+  gridHours.forEach(hr => {
+    const gx = (hr / 72.0) * w;
+    odePCtx.beginPath(); odePCtx.moveTo(gx, 0); odePCtx.lineTo(gx, h); odePCtx.stroke();
+  });
+
+  // Zero mood baseline (dashed)
+  const zeroY = h * 0.45;
+  odePCtx.strokeStyle = "rgba(139, 148, 158, 0.4)";
+  odePCtx.setLineDash([4, 4]);
+  odePCtx.beginPath(); odePCtx.moveTo(0, zeroY); odePCtx.lineTo(w, zeroY); odePCtx.stroke();
+  odePCtx.setLineDash([]);
+
+  // Plot multi-channels
+  // 1. Serotonin (Purple: #bc8cff)
+  odePCtx.strokeStyle = "#bc8cff"; odePCtx.lineWidth = 1.6;
+  odePCtx.beginPath();
+  currentPatientTraj.forEach((pt, i) => {
+    const x = (pt.t_hours / 72.0) * w;
+    const y = h * 0.9 - Math.min(1.0, pt.serotonin / 1.5) * (h * 0.8);
+    if (i === 0) odePCtx.moveTo(x, y); else odePCtx.lineTo(x, y);
+  });
+  odePCtx.stroke();
+
+  // 2. Dopamine (Gold: #d29922)
+  odePCtx.strokeStyle = "#d29922"; odePCtx.lineWidth = 1.6;
+  odePCtx.beginPath();
+  currentPatientTraj.forEach((pt, i) => {
+    const x = (pt.t_hours / 72.0) * w;
+    const y = h * 0.9 - Math.min(1.0, pt.dopamine / 0.5) * (h * 0.8);
+    if (i === 0) odePCtx.moveTo(x, y); else odePCtx.lineTo(x, y);
+  });
+  odePCtx.stroke();
+
+  // 3. ATP (Green: #3fb950)
+  odePCtx.strokeStyle = "#3fb950"; odePCtx.lineWidth = 1.6;
+  odePCtx.beginPath();
+  currentPatientTraj.forEach((pt, i) => {
+    const x = (pt.t_hours / 72.0) * w;
+    const y = h * 0.9 - Math.min(1.0, pt.atp / 1.1) * (h * 0.8);
+    if (i === 0) odePCtx.moveTo(x, y); else odePCtx.lineTo(x, y);
+  });
+  odePCtx.stroke();
+
+  // 4. QA/KA Excitotoxicity (Orange: #f0883e)
+  odePCtx.strokeStyle = "#f0883e"; odePCtx.lineWidth = 1.8;
+  odePCtx.beginPath();
+  currentPatientTraj.forEach((pt, i) => {
+    const x = (pt.t_hours / 72.0) * w;
+    const y = h * 0.9 - Math.min(1.0, pt.qa_ka / 4.0) * (h * 0.8);
+    if (i === 0) odePCtx.moveTo(x, y); else odePCtx.lineTo(x, y);
+  });
+  odePCtx.stroke();
+
+  // 5. Allostatic Load L (Red: #f85149)
+  odePCtx.strokeStyle = "#f85149"; odePCtx.lineWidth = 1.8;
+  odePCtx.beginPath();
+  currentPatientTraj.forEach((pt, i) => {
+    const x = (pt.t_hours / 72.0) * w;
+    const y = h * 0.9 - Math.min(1.0, pt.load_L / 1.1) * (h * 0.8);
+    if (i === 0) odePCtx.moveTo(x, y); else odePCtx.lineTo(x, y);
+  });
+  odePCtx.stroke();
+
+  // 6. Mood m (Cyan: #58a6ff - Main Primary Channel)
+  odePCtx.strokeStyle = "#58a6ff"; odePCtx.lineWidth = 2.5;
+  odePCtx.beginPath();
+  currentPatientTraj.forEach((pt, i) => {
+    const x = (pt.t_hours / 72.0) * w;
+    const y = zeroY - (pt.m / 1.5) * (h * 0.38);
+    if (i === 0) odePCtx.moveTo(x, y); else odePCtx.lineTo(x, y);
+  });
+  odePCtx.stroke();
+
+  // Crosshair on hover
+  if (hoverIdx >= 0 && hoverIdx < currentPatientTraj.length) {
+    const pt = currentPatientTraj[hoverIdx];
+    const hx = (pt.t_hours / 72.0) * w;
+    odePCtx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+    odePCtx.lineWidth = 1;
+    odePCtx.setLineDash([2, 2]);
+    odePCtx.beginPath(); odePCtx.moveTo(hx, 0); odePCtx.lineTo(hx, h); odePCtx.stroke();
+    odePCtx.setLineDash([]);
+
+    // Highlight mood point
+    const hy = zeroY - (pt.m / 1.5) * (h * 0.38);
+    odePCtx.fillStyle = "#58a6ff";
+    odePCtx.beginPath(); odePCtx.arc(hx, hy, 4, 0, Math.PI * 2); odePCtx.fill();
+  }
+}
+
+odePatientCanvas.addEventListener("mousemove", (e) => {
+  if (!currentPatientTraj || currentPatientTraj.length === 0) return;
+  const rect = odePatientCanvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const ratio = mouseX / rect.width;
+  const targetT = ratio * 72.0;
+
+  // Find nearest point
+  let bestIdx = 0;
+  let minDiff = 999;
+  currentPatientTraj.forEach((pt, i) => {
+    const diff = Math.abs(pt.t_hours - targetT);
+    if (diff < minDiff) { minDiff = diff; bestIdx = i; }
+  });
+
+  const pt = currentPatientTraj[bestIdx];
+  chartHoverInfo.style.display = "block";
+  chartHoverInfo.innerHTML = `<strong>T=${pt.t_hours.toFixed(1)}h</strong> | m: <span style="color:#58a6ff;">${pt.m.toFixed(2)}</span> | L: <span style="color:#f85149;">${pt.load_L.toFixed(2)}</span> | QA/KA: <span style="color:#f0883e;">${pt.qa_ka.toFixed(2)}</span> | ATP: <span style="color:#3fb950;">${pt.atp.toFixed(2)}</span>`;
+  drawPatientTrajectory(bestIdx);
+});
+
+odePatientCanvas.addEventListener("mouseleave", () => {
+  chartHoverInfo.style.display = "none";
+  drawPatientTrajectory(-1);
+});
+
+// Initialize Patient Tab on load
+window.addEventListener("load", () => {
+  updateSliderDisplays();
+  runPatientSim();
+});
+
+// --- Tab 3: BOED ---
+document.getElementById("btn-run-boed").addEventListener("click", async () => {
+  const btn = document.getElementById("btn-run-boed");
+  btn.innerText = "Computing Expected Information Gains...";
+  try {
+    const res = await fetch("/api/design", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ already_applied: ["trace_panel"] })
+    });
+    const data = await res.json();
+    document.getElementById("boed-best").innerText = data.best_clamp;
+    const cont = document.getElementById("boed-gains-container");
+    let html = "";
+    for (const [k, v] of Object.entries(data.information_gains_nats)) {
+      const isBest = k === data.best_clamp;
+      html += `<div style="background:var(--bg-card); padding:10px; border-radius:6px; border:1px solid ${isBest ? '#58a6ff' : 'var(--border)'};">
+        <strong style="color:${isBest ? '#58a6ff' : 'inherit'};">${k}</strong>
+        <div style="font-size:1.1rem; font-weight:bold; margin-top:4px;">${v > 0 ? '+' : ''}${v} nats</div>
+      </div>`;
+    }
+    cont.innerHTML = html;
+    document.getElementById("boed-results").style.display = "block";
+    btn.innerText = "🎯 Compute Optimal Dynamic Provocation";
+  } catch(e) {
+    btn.innerText = "Error: " + e;
+  }
+});
+
+// --- Tab 4: Validation ---
+document.getElementById("btn-run-validation").addEventListener("click", async () => {
+  const btn = document.getElementById("btn-run-validation");
+  btn.innerText = "Evaluating Trials...";
+  try {
+    const res = await fetch("/api/validation");
+    const data = await res.json();
+    document.getElementById("val-r2").innerText = data.recovery_r2_mean.toFixed(3);
+    document.getElementById("val-auc").innerText = data.auc_sertraline.toFixed(3);
+    document.getElementById("val-div").innerText = data.drug_placebo_divergence.toFixed(3);
+    btn.innerText = "Run Clinical Validation Battery";
+  } catch(e) {
+    btn.innerText = "Error: " + e;
+  }
+});
+
+document.getElementById("btn-run-biotypes").addEventListener("click", async () => {
+  const btn = document.getElementById("btn-run-biotypes");
+  btn.innerText = "Extracting Biotypes...";
+  try {
+    const res = await fetch("/api/biotypes");
+    const data = await res.json();
+    let html = `<div style="margin-bottom:8px;">Effective Subtype Rank: <strong style="color:#58a6ff;">${data.effective_rank}</strong> (Biotype structure confirmed: ${data.biotypes_confirmed})</div>`;
+    data.subtype_axes.forEach(ax => {
+      html += `<div style="background:var(--bg-card); padding:8px; border-radius:6px; margin-bottom:6px; border:1px solid var(--border);">
+        <strong>Axis ${ax.axis} (${ax.variance_pct}% Variance)</strong>: ${ax.leading_biomarkers.join(", ")}
+      </div>`;
+    });
+    document.getElementById("biotypes-results").innerHTML = html;
+    btn.innerText = "Extract Patient Biotypes";
+  } catch(e) {
+    btn.innerText = "Error: " + e;
+  }
+});
+
+// Export CSV
+document.getElementById("btn-header-export").addEventListener("click", () => {
+  window.location.href = "/api/export";
+});
+
+// Mini Landscape
+const landCanvas = document.getElementById("mini-landscape");
+const landCtx = landCanvas.getContext("2d");
+function drawLandscape() {
+  const w = landCanvas.width = landCanvas.clientWidth;
+  const h = landCanvas.height = landCanvas.clientHeight;
+  landCtx.clearRect(0, 0, w, h);
+  landCtx.strokeStyle = "#58a6ff"; landCtx.lineWidth = 2.0;
+  landCtx.beginPath();
+  for (let px = 0; px < w; px++) {
+    const m = (px / w) * 3.6 - 1.8;
+    const u = (1.0/4)*Math.pow(m,4) - (1.0/2)*Math.pow(m,2) + 0.3*m;
+    const py = h - 10 - ((u + 0.5) / 1.5) * (h - 20);
+    if (px === 0) landCtx.moveTo(px, py); else landCtx.lineTo(px, py);
+  }
+  landCtx.stroke();
+  document.getElementById("landscape-status").innerHTML = `<span style="color:#f85149;">Depressive Well Minima (m = -1.0)</span>`;
+}
+
+// Doctor's Rx Print & Clipboard Handlers
+document.getElementById("btn-print-rx")?.addEventListener("click", () => {
+  window.print();
+});
+
+document.getElementById("btn-copy-rx")?.addEventListener("click", () => {
+  const btn = document.getElementById("btn-copy-rx");
+  const pat = document.getElementById("rx-pat-profile")?.innerText || "Patient";
+  const hamd = document.getElementById("rx-pat-hamd")?.innerText || "";
+  const homa = document.getElementById("rx-pat-homa")?.innerText || "";
+  const dex = document.getElementById("rx-pat-dex")?.innerText || "";
+  
+  let txt = `==========================================================\n`;
+  txt += `CONSULTATION NOTE & PRESCRIPTION REQUISITION (CDS)\n`;
+  txt += `Department of Computational Psychiatry & Metabolic Neuroscience\n`;
+  txt += `Date: ${document.getElementById("rx-date")?.innerText || ""}\n`;
+  txt += `Patient Presentation: ${pat}\n`;
+  txt += `Estimated Severity: ${hamd}\n`;
+  txt += `Metabolic Profile: HOMA-IR ${homa}\n`;
+  txt += `HPA Axis Status: DEX ${dex}\n`;
+  txt += `----------------------------------------------------------\n`;
+  txt += `DIAGNOSTIC PATHOLOGY ORDERS (NABL):\n`;
+  document.querySelectorAll("#rx-lab-orders-list .rx-lab-item span").forEach(el => {
+    txt += `  [ ] ${el.innerText}\n`;
+  });
+  txt += `----------------------------------------------------------\n`;
+  txt += `PRESCRIPTIONS (Rx):\n`;
+  document.querySelectorAll("#rx-prescriptions-body tr").forEach(row => {
+    const tds = row.querySelectorAll("td");
+    if (tds.length >= 3) {
+      txt += `  * ${tds[0].innerText} | ${tds[1].innerText} | ${tds[2].innerText}\n`;
+    }
+  });
+  txt += `----------------------------------------------------------\n`;
+  txt += `CLINICAL PEARL & PRECAUTIONS:\n`;
+  txt += `  Target ferritin > 50 ng/mL and Vit B12 > 400 pg/mL before assessing SSRI efficacy.\n`;
+  txt += `==========================================================\n`;
+
+  navigator.clipboard.writeText(txt).then(() => {
+    const old = btn.innerText;
+    btn.innerText = "✅ Copied to Clipboard!";
+    setTimeout(() => { btn.innerText = old; }, 2000);
+  });
+});
+
+// Initial Run
+resizeCanvas();
+updateCascadeSidebar();
+drawLandscape();
+updateSliderDisplays();
+runPatientSim();
+</script>
+
+</body>
+</html>

@@ -11,9 +11,11 @@ class SleepGlymphatic:
     k_clear_awake: float = 0.05
     k_clear_sws: float = 0.65
     sws_downscale_rate: float = 0.25
+    sws_density: float = 0.7
 
     def step(self, dt: float, sws_density: float, wake_potentiation: float = 0.1) -> None:
         """Glymphatic clearance scales with SWS density; synaptic weights downscale during SWS."""
+        self.sws_density = sws_density
         k_eff = self.k_clear_awake + (self.k_clear_sws - self.k_clear_awake) * sws_density
         self.metabolite_load += dt * (self.prod_rate - k_eff * self.metabolite_load)
         self.metabolite_load = max(0.0, self.metabolite_load)

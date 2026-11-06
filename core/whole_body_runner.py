@@ -85,6 +85,6 @@ class WholeBodyPatient:
             + 0.15 * self.axis.trp.qa_ka
             + 0.20 * self.psy.bandwidth_tax
         )
-        net_drive = trophic_support - allostatic_stress - 0.8
+        net_drive = allostatic_stress - trophic_support + 0.2
         barrier = self.load.barrier_gain(self.mood_params.lam)
         self.m -= dU(self.m, net_drive, barrier, self.mood_params.a, self.mood_params.b) * dt
